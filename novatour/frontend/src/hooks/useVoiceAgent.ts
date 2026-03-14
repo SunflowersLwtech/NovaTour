@@ -16,12 +16,31 @@ import {
   resample,
 } from "@/utils/audio";
 
-const WS_URL = "ws://localhost:8000/ws/voice";
-const API_URL = "http://localhost:8000/api";
+function getBackendUrls() {
+  const apiOriginFromEnv = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const wsOriginFromEnv = process.env.NEXT_PUBLIC_WS_BASE_URL;
+  let defaultApiOrigin = "http://localhost:8000";
+  let defaultWsOrigin = "ws://localhost:8000";
+
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname || "localhost";
+    const apiProtocol = window.location.protocol === "https:" ? "https" : "http";
+    const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
+    defaultApiOrigin = `${apiProtocol}://${host}:8000`;
+    defaultWsOrigin = `${wsProtocol}://${host}:8000`;
+  }
+
+  return {
+    apiUrl: `${(apiOriginFromEnv || defaultApiOrigin).replace(/\/$/, "")}/api`,
+    wsUrl: `${(wsOriginFromEnv || defaultWsOrigin).replace(/\/$/, "")}/ws/voice`,
+  };
+}
 
 export type VoiceStateValue = "idle" | "responding" | "interrupted" | "finished";
 
 export function useVoiceAgent(sessionId: string) {
+  const backendUrlsRef = useRef(getBackendUrls());
+  const connectRef = useRef<() => void>(() => {});
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState<TranscriptMessage[]>([]);
@@ -62,7 +81,7 @@ export function useVoiceAgent(sessionId: string) {
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return;
 
-    const ws = new WebSocket(`${WS_URL}/${sessionId}`);
+    const ws = new WebSocket(`${backendUrlsRef.current.wsUrl}/${sessionId}`);
 
     ws.onopen = () => {
       setIsConnected(true);
@@ -77,7 +96,7 @@ export function useVoiceAgent(sessionId: string) {
         reconnectAttemptRef.current++;
         const delay = 1000 * reconnectAttemptRef.current;
         setError(`Reconnecting (${reconnectAttemptRef.current}/${MAX_RECONNECT})...`);
-        reconnectTimeoutRef.current = setTimeout(() => connect(), delay);
+        reconnectTimeoutRef.current = setTimeout(() => connectRef.current(), delay);
       } else if (ev.code !== 1000) {
         setError("Connection lost. Please reconnect.");
       }
@@ -152,6 +171,10 @@ export function useVoiceAgent(sessionId: string) {
 
     wsRef.current = ws;
   }, [sessionId, addMessage]);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   const disconnect = useCallback(() => {
     clearTimeout(reconnectTimeoutRef.current);
@@ -233,7 +256,7 @@ export function useVoiceAgent(sessionId: string) {
       }
 
       // Fallback: send via REST /api/chat when WebSocket is not connected
-      fetch(`${API_URL}/chat`, {
+      fetch(`${backendUrlsRef.current.apiUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text, session_id: sessionId }),

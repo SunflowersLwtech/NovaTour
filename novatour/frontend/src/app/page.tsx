@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useId } from "react";
 import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { VoicePanel } from "@/ui/VoicePanel";
 import { ChatInterface } from "@/ui/ChatInterface";
@@ -9,10 +9,7 @@ import { NovaActViewer } from "@/ui/NovaActViewer";
 import { TripMap } from "@/ui/TripMap";
 
 export default function Home() {
-  const sessionId = useMemo(
-    () => `session-${Date.now().toString(36)}`,
-    []
-  );
+  const sessionId = `session-${useId().replace(/:/g, "")}`;
 
   const {
     isConnected,
