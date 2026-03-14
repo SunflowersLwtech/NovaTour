@@ -5,6 +5,8 @@ import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { VoicePanel } from "@/ui/VoicePanel";
 import { ChatInterface } from "@/ui/ChatInterface";
 import { ItineraryWorkspace } from "@/ui/ItineraryWorkspace";
+import { NovaActViewer } from "@/ui/NovaActViewer";
+import { TripMap } from "@/ui/TripMap";
 
 export default function Home() {
   const sessionId = useMemo(
@@ -15,10 +17,12 @@ export default function Home() {
   const {
     isConnected,
     isListening,
+    isMuted,
     messages,
     toolCalls,
     itinerary,
     lodLevel,
+    bookingProgress,
     error,
     connect,
     disconnect,
@@ -26,6 +30,7 @@ export default function Home() {
     stopListening,
     sendText,
     setLod,
+    toggleMute,
   } = useVoiceAgent(sessionId);
 
   return (
@@ -34,12 +39,14 @@ export default function Home() {
       <VoicePanel
         isConnected={isConnected}
         isListening={isListening}
+        isMuted={isMuted}
         lodLevel={lodLevel}
         onConnect={connect}
         onDisconnect={disconnect}
         onStartListening={startListening}
         onStopListening={stopListening}
         onSetLod={setLod}
+        onToggleMute={toggleMute}
       />
 
       {/* Error banner */}
@@ -66,28 +73,19 @@ export default function Home() {
           <ItineraryWorkspace itinerary={itinerary} />
         </div>
 
-        {/* Right: Map placeholder */}
+        {/* Right: Map */}
         <div className="w-1/3 min-w-[300px] bg-gray-900 flex flex-col">
           <div className="px-4 py-3 border-b border-gray-700">
             <h2 className="text-sm font-semibold text-gray-300">Map</h2>
           </div>
-          <div className="flex-1 flex items-center justify-center text-gray-600">
-            <div className="text-center">
-              <svg
-                className="w-16 h-16 mx-auto mb-3 opacity-30"
-                fill="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path d="M20.5 3l-.16.03L15 5.1 9 3 3.36 4.9c-.21.07-.36.25-.36.48V20.5c0 .28.22.5.5.5l.16-.03L9 18.9l6 2.1 5.64-1.9c.21-.07.36-.25.36-.48V3.5c0-.28-.22-.5-.5-.5zM15 19l-6-2.11V5l6 2.11V19z" />
-              </svg>
-              <p className="text-sm">Map view</p>
-              <p className="text-xs mt-1 opacity-60">
-                Plan a trip to see locations
-              </p>
-            </div>
+          <div className="flex-1">
+            <TripMap itinerary={itinerary} />
           </div>
         </div>
       </div>
+
+      {/* NovaActViewer overlay */}
+      <NovaActViewer bookingProgress={bookingProgress} />
     </div>
   );
 }

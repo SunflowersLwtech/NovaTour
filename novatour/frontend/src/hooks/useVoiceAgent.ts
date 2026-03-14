@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type {
+  BookingProgress,
   ItineraryData,
   ToolCallInfo,
   TranscriptMessage,
@@ -24,6 +25,8 @@ export function useVoiceAgent(sessionId: string) {
   const [toolCalls, setToolCalls] = useState<ToolCallInfo[]>([]);
   const [itinerary, setItinerary] = useState<ItineraryData | null>(null);
   const [lodLevel, setLodLevel] = useState(2);
+  const [bookingProgress, setBookingProgress] = useState<BookingProgress | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -32,6 +35,10 @@ export function useVoiceAgent(sessionId: string) {
   const processorRef = useRef<ScriptProcessorNode | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const msgIdRef = useRef(0);
+  const isMutedRef = useRef(false);
+  const reconnectAttemptRef = useRef(0);
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const MAX_RECONNECT = 3;
 
   const addMessage = useCallback(
     (role: "user" | "assistant", text: string, is_final: boolean) => {
@@ -56,10 +63,20 @@ export function useVoiceAgent(sessionId: string) {
     ws.onopen = () => {
       setIsConnected(true);
       setError(null);
+      reconnectAttemptRef.current = 0;
     };
 
-    ws.onclose = () => {
+    ws.onclose = (ev) => {
       setIsConnected(false);
+      setIsListening(false);
+      if (ev.code !== 1000 && reconnectAttemptRef.current < MAX_RECONNECT) {
+        reconnectAttemptRef.current++;
+        const delay = 1000 * reconnectAttemptRef.current;
+        setError(`Reconnecting (${reconnectAttemptRef.current}/${MAX_RECONNECT})...`);
+        reconnectTimeoutRef.current = setTimeout(() => connect(), delay);
+      } else if (ev.code !== 1000) {
+        setError("Connection lost. Please reconnect.");
+      }
     };
 
     ws.onerror = () => {
@@ -107,6 +124,14 @@ export function useVoiceAgent(sessionId: string) {
           playerRef.current?.clearBuffer();
           break;
 
+        case "booking_progress":
+          setBookingProgress({
+            step: data.step || "",
+            screenshot: data.screenshot,
+            status: (data.status as BookingProgress["status"]) || "searching",
+          });
+          break;
+
         case "lod_change":
           if (data.level) setLodLevel(data.level);
           break;
@@ -121,6 +146,8 @@ export function useVoiceAgent(sessionId: string) {
   }, [sessionId, addMessage]);
 
   const disconnect = useCallback(() => {
+    clearTimeout(reconnectTimeoutRef.current);
+    reconnectAttemptRef.current = 0;
     wsRef.current?.close();
     wsRef.current = null;
     setIsConnected(false);
@@ -156,6 +183,7 @@ export function useVoiceAgent(sessionId: string) {
 
       processor.onaudioprocess = (e) => {
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
+        if (isMutedRef.current) return;
 
         const input = e.inputBuffer.getChannelData(0);
         // Resample from browser rate to 16kHz
@@ -195,6 +223,13 @@ export function useVoiceAgent(sessionId: string) {
     [addMessage]
   );
 
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => {
+      isMutedRef.current = !prev;
+      return !prev;
+    });
+  }, []);
+
   const setLod = useCallback((level: number) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     wsRef.current.send(JSON.stringify({ type: "lod", level }));
@@ -203,6 +238,7 @@ export function useVoiceAgent(sessionId: string) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      clearTimeout(reconnectTimeoutRef.current);
       stopListening();
       playerRef.current?.close();
       disconnect();
@@ -212,10 +248,12 @@ export function useVoiceAgent(sessionId: string) {
   return {
     isConnected,
     isListening,
+    isMuted,
     messages,
     toolCalls,
     itinerary,
     lodLevel,
+    bookingProgress,
     error,
     connect,
     disconnect,
@@ -223,5 +261,6 @@ export function useVoiceAgent(sessionId: string) {
     stopListening,
     sendText,
     setLod,
+    toggleMute,
   };
 }

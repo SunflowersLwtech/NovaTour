@@ -29,22 +29,35 @@ def create_voice_agent(session_id: str, lod_level: int = 2):
 
     try:
         from strands.experimental.bidi.agent.agent import BidiAgent
-        from strands.experimental.bidi.models.nova_sonic import BidiNovaSonicModel
+        from strands.experimental.bidi.models.nova_sonic import (
+            NOVA_SONIC_V1_MODEL_ID,
+            BidiNovaSonicModel,
+        )
+
+        model_id = settings.nova_sonic_model_id
+        is_v1 = model_id == NOVA_SONIC_V1_MODEL_ID
+
+        provider_config = {
+            "audio": {
+                "voice": "matthew",
+                "input_rate": 16000,
+                "output_rate": 24000,
+                "channels": 1,
+                "format": "pcm",
+            },
+            "inference": {"temperature": 0.7, "max_tokens": 1024, "top_p": 0.95},
+        }
+        # turn_detection is v2-only
+        if not is_v1:
+            provider_config["turn_detection"] = {"endpointingSensitivity": "MEDIUM"}
+
+        if is_v1:
+            logger.info("Using Nova Sonic v1 (turn_detection disabled)")
 
         model = BidiNovaSonicModel(
-            model_id=settings.nova_sonic_model_id,
+            model_id=model_id,
             client_config={"region": settings.aws_default_region},
-            provider_config={
-                "audio": {
-                    "voice": "matthew",
-                    "input_rate": 16000,
-                    "output_rate": 16000,
-                    "channels": 1,
-                    "format": "pcm",
-                },
-                "turn_detection": {"endpointingSensitivity": "MEDIUM"},
-                "inference": {"temperature": 0.7, "max_tokens": 1024, "top_p": 0.9},
-            },
+            provider_config=provider_config,
         )
 
         agent = BidiAgent(

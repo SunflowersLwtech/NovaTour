@@ -1,7 +1,7 @@
 /**
  * Audio utilities for PCM capture and playback.
  * Captures mic at browser rate, resamples to 16kHz PCM, sends as base64.
- * Plays back 16kHz PCM from backend.
+ * Plays back 24kHz PCM from backend.
  */
 
 export function pcmToBase64(pcmData: Int16Array): string {
@@ -67,21 +67,31 @@ export function float32ToInt16(input: Float32Array): Int16Array {
 export class AudioPlayer {
   private context: AudioContext | null = null;
   private nextStartTime = 0;
+  private activeSources: AudioBufferSourceNode[] = [];
 
   async init() {
-    this.context = new AudioContext({ sampleRate: 16000 });
+    this.context = new AudioContext({ sampleRate: 24000 });
     this.nextStartTime = this.context.currentTime;
   }
 
   play(samples: Float32Array) {
     if (!this.context) return;
 
-    const buffer = this.context.createBuffer(1, samples.length, 16000);
+    const buffer = this.context.createBuffer(1, samples.length, 24000);
     buffer.getChannelData(0).set(samples);
 
     const source = this.context.createBufferSource();
     source.buffer = buffer;
     source.connect(this.context.destination);
+
+    // Track the source so it can be stopped on interruption
+    this.activeSources.push(source);
+    source.onended = () => {
+      const idx = this.activeSources.indexOf(source);
+      if (idx !== -1) {
+        this.activeSources.splice(idx, 1);
+      }
+    };
 
     const now = this.context.currentTime;
     const startTime = Math.max(now, this.nextStartTime);
@@ -90,12 +100,24 @@ export class AudioPlayer {
   }
 
   clearBuffer() {
+    // Stop all active/scheduled sources immediately to prevent audio bleed
+    for (const source of this.activeSources) {
+      try {
+        source.stop(0);
+        source.disconnect();
+      } catch {
+        // Source may already have ended; ignore
+      }
+    }
+    this.activeSources = [];
+
     if (this.context) {
       this.nextStartTime = this.context.currentTime;
     }
   }
 
   async close() {
+    this.clearBuffer();
     if (this.context) {
       await this.context.close();
       this.context = null;

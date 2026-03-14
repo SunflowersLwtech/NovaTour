@@ -3,23 +3,27 @@
 interface VoicePanelProps {
   isConnected: boolean;
   isListening: boolean;
+  isMuted: boolean;
   lodLevel: number;
   onConnect: () => void;
   onDisconnect: () => void;
   onStartListening: () => void;
   onStopListening: () => void;
   onSetLod: (level: number) => void;
+  onToggleMute: () => void;
 }
 
 export function VoicePanel({
   isConnected,
   isListening,
+  isMuted,
   lodLevel,
   onConnect,
   onDisconnect,
   onStartListening,
   onStopListening,
   onSetLod,
+  onToggleMute,
 }: VoicePanelProps) {
   return (
     <div className="flex items-center gap-4 px-6 py-3 bg-gray-900 border-b border-gray-700">
@@ -65,9 +69,31 @@ export function VoicePanel({
         </svg>
       </button>
 
+      {/* Mute Button */}
+      <button
+        onClick={onToggleMute}
+        disabled={!isListening}
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+          !isListening
+            ? "bg-gray-700 cursor-not-allowed opacity-50"
+            : isMuted
+            ? "bg-yellow-600 hover:bg-yellow-700"
+            : "bg-gray-600 hover:bg-gray-500"
+        }`}
+        title={isMuted ? "Unmute" : "Mute"}
+      >
+        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+          {isMuted ? (
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
+          ) : (
+            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
+          )}
+        </svg>
+      </button>
+
       {/* Status */}
       <span className="text-sm text-gray-400">
-        {isListening ? "Listening..." : isConnected ? "Ready" : "Disconnected"}
+        {isMuted ? "Muted" : isListening ? "Listening..." : isConnected ? "Ready" : "Disconnected"}
       </span>
 
       {/* LOD Controls */}

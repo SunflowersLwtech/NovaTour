@@ -6,6 +6,7 @@ import httpx
 from strands import tool
 
 from app.config import settings
+from app.utils.resilience import retry_api_call, timed_log
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +66,18 @@ def plan_route(
         headers = {
             "Content-Type": "application/json",
             "X-Goog-Api-Key": api_key,
-            "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters",
+            "X-Goog-FieldMask": "routes.duration,routes.distanceMeters,routes.polyline,routes.legs.steps.navigationInstruction,routes.legs.steps.distanceMeters",
         }
 
-        with httpx.Client(timeout=10) as client:
-            resp = client.post(_ROUTES_URL, json=body, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
+        @retry_api_call()
+        def _call_api():
+            with httpx.Client(timeout=settings.tool_timeout) as client:
+                resp = client.post(_ROUTES_URL, json=body, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+
+        with timed_log(logger, "plan_route"):
+            data = _call_api()
 
         routes = data.get("routes", [])
         if not routes:

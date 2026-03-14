@@ -178,8 +178,13 @@ class NovaTourWSClient:
         timeout: float = 30.0,
         idle_timeout: float = 5.0,
         realtime_factor: float = REALTIME_FACTOR,
+        trailing_silence_ms: int = 2000,
     ) -> TurnResult:
-        """Stream audio, then collect and categorize all response events."""
+        """Stream audio + trailing silence, then collect and categorize all response events.
+
+        Trailing silence helps Nova Sonic's turn detection detect end-of-utterance
+        faster, reducing latency between sending audio and receiving a response.
+        """
         # Drain any pending events from previous turns
         while not self._events.empty():
             try:
@@ -189,6 +194,14 @@ class NovaTourWSClient:
 
         send_start = time.monotonic()
         await self.send_audio(pcm_bytes, realtime_factor=realtime_factor)
+
+        # Send trailing silence to trigger turn detection
+        if trailing_silence_ms > 0:
+            import numpy as np
+            silence_samples = int(16000 * trailing_silence_ms / 1000)
+            silence_bytes = np.zeros(silence_samples, dtype=np.int16).tobytes()
+            await self.send_audio(silence_bytes, realtime_factor=max(realtime_factor, 2.0))
+
         events = await self.collect_events(timeout=timeout, idle_timeout=idle_timeout)
 
         return self._categorize_events(events, utterance_text, send_start)

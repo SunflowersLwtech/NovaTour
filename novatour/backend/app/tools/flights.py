@@ -5,36 +5,24 @@ import logging
 from strands import tool
 
 from app.config import settings
+from app.utils.resilience import retry_api_call, timed_log
 
 logger = logging.getLogger(__name__)
 
-MOCK_FLIGHTS = {
-    "flights": [
-        {
-            "price": "~450 USD",
-            "airline": "ANA",
-            "route": "NRT → CDG",
-            "duration": "~12h 30m",
-            "stops": "Direct",
-        },
-        {
-            "price": "~520 USD",
-            "airline": "Air France",
-            "route": "NRT → CDG",
-            "duration": "~12h 45m",
-            "stops": "Direct",
-        },
-        {
-            "price": "~380 USD",
-            "airline": "Cathay Pacific",
-            "route": "NRT → HKG → CDG",
-            "duration": "~16h 20m",
-            "stops": "1 stop",
-        },
-    ],
-    "count": 3,
-    "mock": True,
-}
+def _mock_flights(origin: str, destination: str) -> dict:
+    """Generate mock flight data that reflects the user's query."""
+    return {
+        "summary": (
+            f"Here are sample flight options from {origin} to {destination}:\n"
+            f"1. Major carrier direct flight: ~$450-600, approximately 8-14 hours\n"
+            f"2. Budget option with 1 stop: ~$300-450, approximately 12-18 hours\n"
+            f"3. Premium direct flight: ~$600-900, approximately 8-14 hours\n"
+            f"(Mock data — connect a Google API key for real-time results)"
+        ),
+        "sources": [],
+        "query": f"flights from {origin} to {destination}",
+        "mock": True,
+    }
 
 
 @tool
@@ -55,7 +43,7 @@ def search_flights(
         adults: Number of passengers
     """
     if settings.mock_mode:
-        return MOCK_FLIGHTS
+        return _mock_flights(origin, destination)
 
     try:
         from google import genai
@@ -63,7 +51,7 @@ def search_flights(
 
         api_key = settings.google_api_key
         if not api_key:
-            return {**MOCK_FLIGHTS, "fallback_reason": "GOOGLE_API_KEY not configured"}
+            return {**_mock_flights(origin, destination), "fallback_reason": "GOOGLE_API_KEY not configured"}
 
         client = genai.Client(api_key=api_key)
 
@@ -76,14 +64,19 @@ def search_flights(
             query += f" returning {return_date}"
         query += f" for {adults} adult(s). Show prices, airlines, duration, and number of stops."
 
-        response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-05-20",
-            contents=query,
-            config=types.GenerateContentConfig(
-                tools=[types.Tool(google_search=types.GoogleSearch())],
-                temperature=0.1,
-            ),
-        )
+        @retry_api_call(retry_on=(Exception,))
+        def _call_api():
+            return client.models.generate_content(
+                model="gemini-2.5-flash-preview-05-20",
+                contents=query,
+                config=types.GenerateContentConfig(
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    temperature=0.1,
+                ),
+            )
+
+        with timed_log(logger, "search_flights"):
+            response = _call_api()
 
         answer = response.text or "No flight information found."
 
@@ -103,4 +96,4 @@ def search_flights(
 
     except Exception as e:
         logger.warning(f"Flight search failed: {e}, returning mock data")
-        return {**MOCK_FLIGHTS, "fallback_reason": str(e)}
+        return {**_mock_flights(origin, destination), "fallback_reason": str(e)}

@@ -7,7 +7,8 @@ export interface VoiceEvent {
     | "interruption"
     | "error"
     | "lod_change"
-    | "booking_progress";
+    | "booking_progress"
+    | "voice_state";
   data?: string;
   text?: string;
   role?: "user" | "assistant";
@@ -18,6 +19,15 @@ export interface VoiceEvent {
   result?: string;
   message?: string;
   level?: number;
+  step?: string;
+  screenshot?: string;
+  state?: string;
+}
+
+export interface BookingProgress {
+  step: string;
+  screenshot?: string;
+  status: "searching" | "found" | "booking" | "complete" | "error";
 }
 
 export interface TranscriptMessage {
@@ -55,4 +65,7 @@ export interface Activity {
   activity: string;
   location: string;
   duration: string;
+  latitude?: number;
+  longitude?: number;
+  photo_url?: string;
 }

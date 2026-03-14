@@ -14,21 +14,23 @@ from typing import Any, Callable, Dict, Optional
 from strands import tool
 
 from app.config import settings
+from app.utils.resilience import timed_log
 
 logger = logging.getLogger(__name__)
 
-MOCK_BOOKING = {
-    "status": "found",
-    "booking": {
-        "airline": "All Nippon Airways",
-        "price": "$450",
-        "departure": "10:00 AM",
-        "duration": "12h 30m",
-        "stops": "Non-stop",
-    },
-    "message": "Found flight option (mock mode)",
-    "mock": True,
-}
+def _mock_booking(origin: str, destination: str) -> dict:
+    return {
+        "status": "found",
+        "booking": {
+            "airline": "Major Carrier",
+            "price": "$450-600",
+            "departure": "10:00 AM",
+            "duration": "Varies by route",
+            "stops": "Non-stop",
+        },
+        "message": f"Found flight from {origin} to {destination} (mock mode)",
+        "mock": True,
+    }
 
 # Active async booking tasks
 _booking_tasks: Dict[str, asyncio.Task] = {}
@@ -51,7 +53,7 @@ def book_flight(
     """
     if settings.mock_mode:
         return {
-            **MOCK_BOOKING,
+            **_mock_booking(origin, destination),
             "message": f"Found flight from {origin} to {destination} on {date} (mock mode)",
         }
 
@@ -61,12 +63,12 @@ def book_flight(
         nova_act_key = settings.nova_act_api_key
         if not nova_act_key:
             return {
-                **MOCK_BOOKING,
+                **_mock_booking(origin, destination),
                 "message": f"Found flight from {origin} to {destination} (mock - no API key)",
                 "fallback_reason": "Nova Act API key not configured",
             }
 
-        with NovaAct(
+        with timed_log(logger, "book_flight"), NovaAct(
             starting_page="https://www.google.com/travel/flights",
             nova_act_api_key=nova_act_key,
         ) as nova:
@@ -90,14 +92,14 @@ def book_flight(
     except ImportError:
         logger.warning("nova-act not installed, returning mock data")
         return {
-            **MOCK_BOOKING,
+            **_mock_booking(origin, destination),
             "message": f"Found flight from {origin} to {destination} (mock - nova-act not installed)",
             "fallback_reason": "nova-act package not installed",
         }
     except Exception as e:
         logger.warning(f"Flight booking failed: {e}, returning mock data")
         return {
-            **MOCK_BOOKING,
+            **_mock_booking(origin, destination),
             "message": f"Found flight from {origin} to {destination} (mock - error)",
             "fallback_reason": str(e),
         }

@@ -34,37 +34,40 @@ class LODConfig:
 LOD_1_CONFIG = LODConfig(
     lod=1,
     word_range=(15, 40),
-    structure="Single sentence, core fact",
+    structure="Quick answer",
     system_prompt=(
-        "Minimal mode: State only the most essential fact, no elaboration, no explanation. "
-        "Convey information in the most concise way possible."
+        "Quick mode: Answer in one sentence. Give the single most useful fact. "
+        "Example: 'The best time to visit is spring or fall for mild weather and fewer crowds.' "
+        "No elaboration, no follow-up questions, no filler."
     ),
-    tts_instructions="Speak efficiently. Fast pace. Professional tone. No filler words.",
+    tts_instructions="Speak efficiently. Fast pace. Confident and direct. Zero filler words.",
 )
 
 LOD_2_CONFIG = LODConfig(
     lod=2,
     word_range=(80, 150),
-    structure="Introduction + key points + guidance",
+    structure="Conversational summary",
     system_prompt=(
-        "Balanced mode: Introduction + 2-3 key points + guiding conclusion. "
-        "Provide enough information for understanding while staying concise."
+        "Conversational mode: Lead with the key answer, add 2-3 supporting details, "
+        "then suggest a natural next step. Sound like a knowledgeable friend chatting. "
+        "Example structure: direct answer, why it matters, practical tip, what to explore next."
     ),
-    tts_instructions="Speak clearly. Medium pace. Warm and conversational.",
+    tts_instructions="Speak clearly. Medium pace. Warm, like talking to a friend over coffee.",
 )
 
 LOD_3_CONFIG = LODConfig(
     lod=3,
     word_range=(400, 800),
-    structure="Complete narrative arc",
+    structure="Immersive narrative",
     system_prompt=(
-        "Narrative mode: Unfold in a storytelling manner with beginning, development, and conclusion. "
-        "Include background stories, interesting details, and vivid metaphors. "
-        "Engage users like telling a story, making information more memorable."
+        "Narrative mode: Tell a story. Transport the listener to the destination. "
+        "Use sensory details — what they'll see, hear, smell, taste. "
+        "Weave practical information into the narrative naturally. "
+        "Structure: a captivating opening, rich middle with local color, and a closing that inspires action."
     ),
     tts_instructions=(
-        "Speak expressively. Slower, storytelling pace. "
-        "Dramatic pauses for effect. Varied intonation."
+        "Speak expressively like a travel documentary narrator. Slower pace. "
+        "Pause before revealing surprising details. Vary your energy — build and release."
     ),
 )
 

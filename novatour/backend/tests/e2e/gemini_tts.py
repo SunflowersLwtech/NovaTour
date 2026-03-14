@@ -78,7 +78,7 @@ class GeminiTTS:
     """Generates test audio via Gemini TTS with local file caching."""
 
     def __init__(self, api_key: str, cache_dir: Path = CACHE_DIR):
-        self.client = genai.Client(api_key=api_key)
+        self.client = genai.Client(api_key=api_key or None)
         self.cache_dir = cache_dir
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 

@@ -57,6 +57,17 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
                   <span className="text-blue-400 font-mono text-xs mt-0.5 w-12 flex-shrink-0">
                     {act.time}
                   </span>
+                  {act.photo_url && (
+                    <img
+                      src={act.photo_url}
+                      alt={act.activity}
+                      className="w-14 h-14 rounded object-cover flex-shrink-0"
+                      loading="lazy"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="text-gray-200">{act.activity}</p>
                     <p className="text-xs text-gray-500">

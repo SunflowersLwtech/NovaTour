@@ -2,7 +2,6 @@
 
 import base64
 import struct
-from typing import bytes as Bytes
 
 
 def pcm_to_base64(pcm_data: bytes) -> str:

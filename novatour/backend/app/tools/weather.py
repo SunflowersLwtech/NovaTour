@@ -6,35 +6,32 @@ import httpx
 from strands import tool
 
 from app.config import settings
+from app.utils.resilience import retry_api_call, timed_log
 
 logger = logging.getLogger(__name__)
 
 OWM_BASE = "https://api.openweathermap.org/data/2.5"
 
-MOCK_WEATHER = {
-    "city": "Tokyo",
-    "country": "JP",
-    "temperature": 22.0,
-    "feels_like": 21.5,
-    "description": "clear sky",
-    "humidity": 55,
-    "wind_speed": 3.5,
-    "pressure": 1013,
-    "mock": True,
-}
+def _mock_weather(city: str) -> dict:
+    return {
+        "city": city, "temperature": 22.0, "feels_like": 21.5,
+        "description": "partly cloudy", "humidity": 55, "wind_speed": 3.5,
+        "pressure": 1013, "mock": True,
+    }
 
-MOCK_FORECAST = {
-    "city": "Tokyo",
-    "country": "JP",
-    "days": [
-        {"date": "2026-04-01", "temp_min": 18.0, "temp_max": 24.0, "description": "clear sky", "humidity": 50},
-        {"date": "2026-04-02", "temp_min": 17.0, "temp_max": 23.0, "description": "few clouds", "humidity": 55},
-        {"date": "2026-04-03", "temp_min": 15.0, "temp_max": 20.0, "description": "light rain", "humidity": 70},
-        {"date": "2026-04-04", "temp_min": 16.0, "temp_max": 22.0, "description": "scattered clouds", "humidity": 60},
-        {"date": "2026-04-05", "temp_min": 19.0, "temp_max": 25.0, "description": "clear sky", "humidity": 45},
-    ],
-    "mock": True,
-}
+def _mock_forecast(city: str) -> dict:
+    from datetime import date, timedelta
+    today = date.today()
+    return {
+        "city": city, "mock": True,
+        "days": [
+            {"date": (today + timedelta(days=i)).isoformat(),
+             "temp_min": 16 + i, "temp_max": 23 + i,
+             "description": ["clear sky", "few clouds", "light rain", "scattered clouds", "clear sky"][i],
+             "humidity": 50 + i * 5}
+            for i in range(5)
+        ],
+    }
 
 
 @tool
@@ -51,12 +48,12 @@ def get_weather(
         longitude: Longitude (0 to use city name)
     """
     if settings.mock_mode:
-        return {**MOCK_WEATHER, "city": city}
+        return _mock_weather(city)
 
     try:
         api_key = settings.openweather_api_key
         if not api_key:
-            return {**MOCK_WEATHER, "city": city, "fallback_reason": "OpenWeather API key not configured"}
+            return {**_mock_weather(city), "fallback_reason": "OpenWeather API key not configured"}
 
         params = {
             "appid": api_key,
@@ -68,10 +65,15 @@ def get_weather(
         else:
             params["q"] = city
 
-        with httpx.Client(timeout=10) as client:
-            resp = client.get(f"{OWM_BASE}/weather", params=params)
-            resp.raise_for_status()
-            data = resp.json()
+        @retry_api_call()
+        def _call_api():
+            with httpx.Client(timeout=settings.tool_timeout) as client:
+                resp = client.get(f"{OWM_BASE}/weather", params=params)
+                resp.raise_for_status()
+                return resp.json()
+
+        with timed_log(logger, "get_weather"):
+            data = _call_api()
 
         main = data.get("main", {})
         weather = data.get("weather", [{}])[0]
@@ -95,7 +97,7 @@ def get_weather(
 
     except Exception as e:
         logger.warning(f"Weather fetch failed: {e}, returning mock data")
-        return {**MOCK_WEATHER, "city": city, "fallback_reason": str(e)}
+        return {**_mock_weather(city), "fallback_reason": str(e)}
 
 
 @tool
@@ -114,12 +116,12 @@ def get_forecast(
         longitude: Longitude (0 to use city name)
     """
     if settings.mock_mode:
-        return {**MOCK_FORECAST, "city": city}
+        return _mock_forecast(city)
 
     try:
         api_key = settings.openweather_api_key
         if not api_key:
-            return {**MOCK_FORECAST, "city": city, "fallback_reason": "OpenWeather API key not configured"}
+            return {**_mock_forecast(city), "fallback_reason": "OpenWeather API key not configured"}
 
         days = min(max(days, 1), 5)
         params = {
@@ -133,10 +135,15 @@ def get_forecast(
         else:
             params["q"] = city
 
-        with httpx.Client(timeout=10) as client:
-            resp = client.get(f"{OWM_BASE}/forecast", params=params)
-            resp.raise_for_status()
-            data = resp.json()
+        @retry_api_call()
+        def _call_api():
+            with httpx.Client(timeout=settings.tool_timeout) as client:
+                resp = client.get(f"{OWM_BASE}/forecast", params=params)
+                resp.raise_for_status()
+                return resp.json()
+
+        with timed_log(logger, "get_forecast"):
+            data = _call_api()
 
         city_info = data.get("city", {})
         forecasts = data.get("list", [])
@@ -171,4 +178,4 @@ def get_forecast(
 
     except Exception as e:
         logger.warning(f"Forecast fetch failed: {e}, returning mock data")
-        return {**MOCK_FORECAST, "city": city, "fallback_reason": str(e)}
+        return {**_mock_forecast(city), "fallback_reason": str(e)}

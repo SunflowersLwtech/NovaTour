@@ -16,6 +16,7 @@ google-genai>=1.14.0
 
 # Utils
 orjson>=3.10.0
+tenacity>=8.2.0
 
 # E2E Testing
 pytest>=8.0.0

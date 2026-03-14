@@ -37,15 +37,12 @@ async def chat(request: ChatRequest) -> ChatResponse:
             aws_secret_access_key=settings.aws_secret_access_key,
         )
 
+        from app.lod.prompt_builder import CHAT_SYSTEM_PROMPT
+
         response = client.converse(
             modelId=settings.nova_lite_model_id,
             messages=[{"role": "user", "content": [{"text": request.message}]}],
-            system=[
-                {
-                    "text": "You are NovaTour, a helpful AI travel assistant. "
-                    "Keep responses concise and helpful."
-                }
-            ],
+            system=[{"text": CHAT_SYSTEM_PROMPT}],
             inferenceConfig={"maxTokens": 1024, "temperature": 0.7},
         )
 
@@ -55,6 +52,12 @@ async def chat(request: ChatRequest) -> ChatResponse:
     except Exception as e:
         logger.warning(f"Chat API error: {e}")
         return ChatResponse(
-            reply="I'm having trouble connecting right now. Please try the voice interface or try again later.",
+            reply=(
+                "I'm temporarily unable to connect to my travel services. "
+                "While I reconnect, here are some things I can help with: "
+                "flight searches, hotel comparisons, weather checks, "
+                "route planning, and full itinerary creation. "
+                "Please try again in a moment!"
+            ),
             session_id=request.session_id,
         )

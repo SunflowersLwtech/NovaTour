@@ -21,11 +21,20 @@ class Settings(BaseSettings):
     # Weather
     openweather_api_key: str = ""
 
+    # Geoapify
+    geoapify_api_key: str = ""
+
     # App
     app_name: str = "NovaTour"
     app_port: int = 8000
     log_level: str = "INFO"
     mock_mode: bool = False
+
+    # Resilience
+    tool_retry_attempts: int = 2
+    tool_retry_min_wait: float = 0.5
+    tool_retry_max_wait: float = 2.0
+    tool_timeout: float = 10.0
 
     # DynamoDB
     dynamodb_sessions_table: str = "novatour-sessions"

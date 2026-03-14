@@ -7,6 +7,7 @@ import httpx
 from strands import tool
 
 from app.config import settings
+from app.utils.resilience import retry_api_call, timed_log
 
 logger = logging.getLogger(__name__)
 
@@ -20,39 +21,22 @@ _FIELD_MASK = (
     "places.userRatingCount,"
     "places.location,"
     "places.currentOpeningHours,"
-    "places.websiteUri"
+    "places.websiteUri,"
+    "places.photos"
 )
 
-MOCK_PLACES = {
-    "places": [
-        {
-            "name": "Senso-ji Temple",
-            "address": "2 Chome-3-1 Asakusa, Taito City, Tokyo",
-            "lat": 35.7148,
-            "lon": 139.7967,
-            "rating": 4.5,
-            "types": ["tourist_attraction", "place_of_worship"],
-        },
-        {
-            "name": "Meiji Jingu Shrine",
-            "address": "1-1 Yoyogikamizonocho, Shibuya City, Tokyo",
-            "lat": 35.6764,
-            "lon": 139.6993,
-            "rating": 4.7,
-            "types": ["tourist_attraction", "place_of_worship"],
-        },
-        {
-            "name": "Tokyo Skytree",
-            "address": "1 Chome-1-2 Oshiage, Sumida City, Tokyo",
-            "lat": 35.7101,
-            "lon": 139.8107,
-            "rating": 4.4,
-            "types": ["tourist_attraction"],
-        },
-    ],
-    "count": 3,
-    "mock": True,
-}
+# Google Places API photo URL template
+_PHOTO_URL_TEMPLATE = "https://places.googleapis.com/v1/{photo_name}/media?maxWidthPx=640&key={api_key}"
+
+def _mock_places(query: str) -> dict:
+    return {
+        "places": [
+            {"name": f"Popular Attraction 1 ({query})", "address": f"Central area", "lat": 0, "lon": 0, "rating": 4.5, "types": ["tourist_attraction"]},
+            {"name": f"Popular Attraction 2 ({query})", "address": f"Historic district", "lat": 0, "lon": 0, "rating": 4.7, "types": ["tourist_attraction"]},
+            {"name": f"Popular Attraction 3 ({query})", "address": f"Waterfront area", "lat": 0, "lon": 0, "rating": 4.4, "types": ["tourist_attraction"]},
+        ],
+        "count": 3, "query": query, "mock": True,
+    }
 
 
 def _haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -82,12 +66,12 @@ def search_places(
         limit: Max results to return
     """
     if settings.mock_mode:
-        return MOCK_PLACES
+        return _mock_places(query)
 
     try:
         api_key = settings.google_maps_api_key
         if not api_key:
-            return {**MOCK_PLACES, "fallback_reason": "GOOGLE_MAPS_API_KEY not configured"}
+            return {**_mock_places(query), "fallback_reason": "GOOGLE_MAPS_API_KEY not configured"}
 
         headers = {
             "Content-Type": "application/json",
@@ -110,10 +94,15 @@ def search_places(
                 }
             }
 
-        with httpx.Client(timeout=10) as client:
-            resp = client.post(_PLACES_TEXT_SEARCH_URL, json=body, headers=headers)
-            resp.raise_for_status()
-            data = resp.json()
+        @retry_api_call()
+        def _call_api():
+            with httpx.Client(timeout=settings.tool_timeout) as client:
+                resp = client.post(_PLACES_TEXT_SEARCH_URL, json=body, headers=headers)
+                resp.raise_for_status()
+                return resp.json()
+
+        with timed_log(logger, "search_places"):
+            data = _call_api()
 
         places = []
         for place in data.get("places", [])[:limit]:
@@ -121,6 +110,16 @@ def search_places(
             location = place.get("location", {})
             lat = location.get("latitude", 0)
             lon = location.get("longitude", 0)
+
+            # Extract first photo URL if available
+            photo_url = ""
+            photos = place.get("photos", [])
+            if photos and api_key:
+                photo_name = photos[0].get("name", "")
+                if photo_name:
+                    photo_url = _PHOTO_URL_TEMPLATE.format(
+                        photo_name=photo_name, api_key=api_key
+                    )
 
             place_info = {
                 "name": display_name.get("text", "Unknown"),
@@ -131,6 +130,7 @@ def search_places(
                 "review_count": place.get("userRatingCount", 0),
                 "types": place.get("types", [])[:3],
                 "website": place.get("websiteUri", ""),
+                "photo_url": photo_url,
             }
 
             if has_coords:
@@ -145,4 +145,4 @@ def search_places(
 
     except Exception as e:
         logger.warning(f"Place search failed: {e}, returning mock data")
-        return {**MOCK_PLACES, "fallback_reason": str(e)}
+        return {**_mock_places(query), "fallback_reason": str(e)}

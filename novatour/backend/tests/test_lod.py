@@ -115,7 +115,7 @@ def test_build_system_prompt_default():
 def test_build_system_prompt_lod1():
     prompt = build_system_prompt(lod_level=1)
     assert "Level 1" in prompt
-    assert "Minimal" in prompt
+    assert "Quick answer" in prompt
 
 
 def test_build_system_prompt_lod3_has_podcast():
