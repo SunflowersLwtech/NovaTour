@@ -6,14 +6,17 @@
 
 **Speak your dream trip. Watch it come to life.** NovaTour combines **four Amazon Nova AI services** into a voice-driven travel assistant — searching flights, finding hotels, checking weather, generating itineraries, and automating bookings through natural speech.
 
-[![Amazon Nova](https://img.shields.io/badge/Powered_by-Amazon_Nova-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/ai/generative-ai/nova/)
-[![Strands Agents](https://img.shields.io/badge/Built_with-Strands_Agents-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)](https://github.com/strands-agents/sdk-python)
+[![Amazon Nova](https://img.shields.io/badge/Amazon_Nova-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/ai/generative-ai/nova/)
+[![Strands Agents](https://img.shields.io/badge/Strands_Agents-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)](https://github.com/strands-agents/sdk-python)
+[![Gemini 3.1](https://img.shields.io/badge/Gemini_3.1-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 
 [![Python](https://img.shields.io/badge/Python_3.13-3776AB?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org)
 [![React](https://img.shields.io/badge/React_19-61DAFB?logo=react&logoColor=black)](https://react.dev)
 [![Tailwind](https://img.shields.io/badge/Tailwind_4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
+[![Google Maps](https://img.shields.io/badge/Google_Maps-4285F4?logo=googlemaps&logoColor=white)](https://developers.google.com/maps)
+[![OpenWeather](https://img.shields.io/badge/OpenWeather-EB6E4B?logo=openweathermap&logoColor=white)](https://openweathermap.org/)
 
 </div>
 
@@ -73,7 +76,7 @@ Speakers ← AudioPlayer(gapless) ← base64 ← WebSocket ← events ← Tool R
 
 | Tool | API | What It Does |
 |------|-----|-------------|
-| `search_flights` | Gemini 2.5 Flash + Google Search | Real-time flight search with grounding |
+| `search_flights` | Gemini 3.1 Flash Lite + Google Search | Real-time flight search with grounding |
 | `search_hotels` | Google Places (New) | Hotels with ratings, prices, photos |
 | `search_places` | Google Places (New) | POI search with photos, distance sorting |
 | `plan_route` | Google Routes v2 | Turn-by-turn directions + polyline |
@@ -207,6 +210,7 @@ novatour/
 **NovaTour** — Voice-first travel planning powered by Amazon Nova
 
 <a href="https://aws.amazon.com/ai/generative-ai/nova/"><img src="https://img.shields.io/badge/Amazon_Nova-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="Amazon Nova"/></a>
+<a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Gemini_3.1-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini"/></a>
 <a href="https://github.com/strands-agents/sdk-python"><img src="https://img.shields.io/badge/Strands_Agents-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="Strands Agents"/></a>
 
 </div>

@@ -1,4 +1,4 @@
-"""Flight search tool using Google Gemini Search grounding."""
+"""Flight search tool using Gemini 3.1 Flash Lite with Google Search grounding."""
 
 import logging
 
@@ -67,7 +67,7 @@ def search_flights(
         @retry_api_call(retry_on=(Exception,))
         def _call_api():
             return client.models.generate_content(
-                model="gemini-2.5-flash-preview-05-20",
+                model="gemini-3.1-flash-lite-preview",
                 contents=query,
                 config=types.GenerateContentConfig(
                     tools=[types.Tool(google_search=types.GoogleSearch())],

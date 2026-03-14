@@ -33,7 +33,7 @@
     <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Flights via Gemini Search grounding</text>
     <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">API: google-genai + GoogleSearch tool</text>
     <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: prices, airlines, duration, stops</text>
-    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Model: gemini-2.5-flash-preview-05-20</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Model: gemini-3.1-flash-lite-preview</text>
   </g>
 
   <!-- search_hotels -->

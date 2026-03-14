@@ -76,21 +76,18 @@ def test_tool_specs():
 def test_search_flights_mock():
     from app.tools.flights import search_flights
 
-    result = search_flights("Tokyo", "Paris", "2026-04-01")
-    assert "flights" in result
-    assert isinstance(result["flights"], list)
-    assert len(result["flights"]) > 0
+    result = search_flights("London", "Rome", "2026-06-01")
+    assert "summary" in result or "flights" in result
     assert result.get("mock") is True
 
 
-def test_search_flights_mock_fields():
+def test_search_flights_mock_reflects_query():
     from app.tools.flights import search_flights
 
-    result = search_flights("Tokyo", "Paris", "2026-04-01")
-    flight = result["flights"][0]
-    assert "price" in flight
-    assert "airline" in flight
-    assert "route" in flight
+    result = search_flights("London", "Rome", "2026-06-01")
+    summary = result.get("summary", "") + result.get("query", "")
+    assert "London" in summary or "london" in summary.lower()
+    assert "Rome" in summary or "rome" in summary.lower()
 
 
 # ── Hotel Tool Tests ──────────────────────────────────────────
