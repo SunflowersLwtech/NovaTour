@@ -41,6 +41,9 @@ reference/
 CLAUDE.md
 AGENTS.md
 
+# Hackathon submission (video project, audio, screenshots, docs — all local-only)
+hackathon/
+
 # Playwright artifacts (reports, screenshots, traces, videos)
 playwright-report/
 test-results/
