@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 380">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#06081a"/>
-      <stop offset="50%" stop-color="#0c1225"/>
+      <stop offset="40%" stop-color="#0c1225"/>
       <stop offset="100%" stop-color="#081020"/>
     </linearGradient>
     <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -13,100 +13,145 @@
       <stop offset="0%" stop-color="#f59e0b"/>
       <stop offset="100%" stop-color="#f97316"/>
     </linearGradient>
-    <linearGradient id="gemini" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8b5cf6"/>
-      <stop offset="50%" stop-color="#6366f1"/>
-      <stop offset="100%" stop-color="#3b82f6"/>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4A853"/>
+      <stop offset="50%" stop-color="#C49B3C"/>
+      <stop offset="100%" stop-color="#B8912F"/>
     </linearGradient>
     <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
-    <filter id="softglow"><feGaussianBlur stdDeviation="12" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+    <filter id="softglow"><feGaussianBlur stdDeviation="15" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+    <filter id="logoGlow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
 
   <!-- Background -->
-  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect width="1200" height="380" fill="url(#bg)"/>
 
-  <!-- Grid -->
-  <g opacity="0.03" stroke="#60a5fa" stroke-width="0.5">
+  <!-- Subtle grid -->
+  <g opacity="0.025" stroke="#60a5fa" stroke-width="0.5">
     <line x1="0" y1="60" x2="1200" y2="60"/><line x1="0" y1="120" x2="1200" y2="120"/>
     <line x1="0" y1="180" x2="1200" y2="180"/><line x1="0" y1="240" x2="1200" y2="240"/>
-    <line x1="200" y1="0" x2="200" y2="340"/><line x1="400" y1="0" x2="400" y2="340"/>
-    <line x1="600" y1="0" x2="600" y2="340"/><line x1="800" y1="0" x2="800" y2="340"/>
-    <line x1="1000" y1="0" x2="1000" y2="340"/>
+    <line x1="0" y1="300" x2="1200" y2="300"/>
+    <line x1="200" y1="0" x2="200" y2="380"/><line x1="400" y1="0" x2="400" y2="380"/>
+    <line x1="600" y1="0" x2="600" y2="380"/><line x1="800" y1="0" x2="800" y2="380"/>
+    <line x1="1000" y1="0" x2="1000" y2="380"/>
   </g>
 
   <!-- Ambient orbs -->
-  <circle cx="200" cy="170" r="160" fill="#3b82f6" opacity="0.035"/>
-  <circle cx="1000" cy="170" r="180" fill="#f59e0b" opacity="0.025"/>
+  <circle cx="140" cy="190" r="180" fill="#3b82f6" opacity="0.03"/>
+  <circle cx="1060" cy="190" r="200" fill="#f59e0b" opacity="0.02"/>
+  <circle cx="600" cy="190" r="280" fill="#C49B3C" opacity="0.015"/>
 
-  <!-- Sound wave (left) -->
-  <g transform="translate(95,115)" opacity="0.12" stroke="#60a5fa" fill="none" stroke-width="1.8" stroke-linecap="round">
-    <path d="M0,30 Q12,8 24,30 Q36,52 48,30 Q60,8 72,30"/>
-    <path d="M0,48 Q12,26 24,48 Q36,70 48,48 Q60,26 72,48" opacity="0.5"/>
+  <!-- Sound wave decoration (left) -->
+  <g transform="translate(80,130)" opacity="0.1" stroke="#60a5fa" fill="none" stroke-width="1.5" stroke-linecap="round">
+    <path d="M0,30 Q15,5 30,30 Q45,55 60,30 Q75,5 90,30"/>
+    <path d="M5,50 Q20,25 35,50 Q50,75 65,50 Q80,25 95,50" opacity="0.5"/>
   </g>
 
   <!-- Flight path (right) -->
-  <g transform="translate(1030,70)" opacity="0.1">
-    <path d="M0,55 Q45,15 90,35 Q135,55 170,20" stroke="#f59e0b" fill="none" stroke-width="1.5" stroke-dasharray="5,5"/>
-    <polygon points="170,20 158,18 162,28" fill="#f59e0b"/>
+  <g transform="translate(1040,80)" opacity="0.08">
+    <path d="M0,60 Q50,10 100,35 Q150,60 180,15" stroke="#f59e0b" fill="none" stroke-width="1.5" stroke-dasharray="5,5"/>
+    <polygon points="180,15 168,13 172,23" fill="#f59e0b"/>
+  </g>
+
+  <!-- ============ COMPASS LOGO ============ -->
+  <g transform="translate(600, 110)" filter="url(#logoGlow)">
+    <!-- Outer navy ring -->
+    <circle cx="0" cy="0" r="44" fill="#1B2A4A"/>
+    <!-- Gold ring -->
+    <circle cx="0" cy="0" r="35" fill="none" stroke="url(#goldRing)" stroke-width="2.5"/>
+    <!-- Inner white area -->
+    <circle cx="0" cy="0" r="31" fill="white" opacity="0.95"/>
+    <!-- Cardinal labels -->
+    <text x="0" y="-19" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#1B2A4A" text-anchor="middle">N</text>
+    <text x="0" y="24" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#1B2A4A" text-anchor="middle">S</text>
+    <text x="-22" y="3" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#1B2A4A" text-anchor="middle">W</text>
+    <text x="22" y="3" font-family="system-ui,sans-serif" font-size="8" font-weight="700" fill="#1B2A4A" text-anchor="middle">E</text>
+    <!-- Center chat bubble -->
+    <circle cx="0" cy="0" r="13" fill="#1B2A4A"/>
+    <path d="M-7,9 L-10,16 L2,9" fill="#1B2A4A"/>
+    <!-- Compass star -->
+    <path d="M0,-6 L1.5,-1.5 L6,0 L1.5,1.5 L0,6 L-1.5,1.5 L-6,0 L-1.5,-1.5 Z" fill="#C49B3C"/>
+    <circle cx="0" cy="0" r="1.5" fill="#C49B3C"/>
   </g>
 
   <!-- ============ TITLE ============ -->
-  <text x="600" y="135" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="76" font-weight="800" letter-spacing="-1">
+  <text x="600" y="185" text-anchor="middle" font-family="system-ui,-apple-system,'Segoe UI',Helvetica,Arial,sans-serif" font-size="72" font-weight="800" letter-spacing="-1">
     <tspan fill="#ffffff">Nova</tspan><tspan fill="url(#blue)" filter="url(#glow)">Tour</tspan>
   </text>
 
   <!-- Subtitle -->
-  <text x="600" y="175" text-anchor="middle" font-family="system-ui,sans-serif" font-size="16" fill="#94a3b8" letter-spacing="5" font-weight="300">AI VOICE TRAVEL ASSISTANT</text>
+  <text x="600" y="215" text-anchor="middle" font-family="system-ui,sans-serif" font-size="15" fill="#94a3b8" letter-spacing="5" font-weight="300">AI VOICE TRAVEL ASSISTANT</text>
 
   <!-- Tagline -->
-  <text x="600" y="205" text-anchor="middle" font-family="system-ui,sans-serif" font-size="13" fill="#64748b" letter-spacing="0.5">Speak your dream trip. Watch it come to life.</text>
+  <text x="600" y="242" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12.5" fill="#64748b" letter-spacing="0.5">Speak your dream trip. Watch it come to life.</text>
 
-  <!-- ============ SERVICE BADGES WITH ICONS ============ -->
-  <g transform="translate(600, 230)" text-anchor="middle">
+  <!-- ============ SERVICE BADGES ============ -->
+  <g transform="translate(600, 260)" text-anchor="middle">
 
-    <!-- Amazon Nova (AWS orange) -->
-    <g transform="translate(-250, 0)">
-      <rect x="-68" y="0" width="136" height="32" rx="16" fill="#f59e0b" fill-opacity="0.1" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1"/>
-      <!-- AWS cube icon (simplified) -->
-      <g transform="translate(-50,6) scale(0.83)" fill="#fbbf24">
-        <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.35 7.5 12 10.82 4.65 7.5 12 4.18zM4 8.96l7 3.5V20l-7-3.5V8.96zm9 7.54V12.46l7-3.5V17l-7 3.5z"/>
+    <!-- Amazon Nova Sonic -->
+    <g transform="translate(-285, 0)">
+      <rect x="-72" y="0" width="144" height="34" rx="17" fill="#f59e0b" fill-opacity="0.08" stroke="#f59e0b" stroke-opacity="0.25" stroke-width="1"/>
+      <!-- AWS icon -->
+      <g transform="translate(-54,7) scale(0.8)">
+        <path d="M8.4 14.3c2.9 1.4 6 1.4 8.9.3l.7.8c-3.4 1.4-7 1.4-10.3-.3-.4-.2-.4-.5 0-.7l.7-.1z" fill="#fbbf24"/>
+        <path d="M9.8 12.8c-.2.3-.2.7 0 .9l1.5-.8-.8-1.1c-.4.2-.6.6-.7 1zm5.1-3.8c0-.9-.7-1.3-1.5-1s-1.5.7-1.5 1.6v.5l2.5-1.1h.1c.3-.1.4 0 .4.3v-.3zm2.1.5l-6 2.6c-.3.1-.5.5-.5.9-.1 1 .6 2.1 1.5 2.6.3.1.6.1.8 0l5.8-2.5c.2-.1.4-.4.4-.6.1-1.1-.6-2.3-1.5-2.8-.2-.2-.4-.3-.5-.2z" fill="#fbbf24"/>
       </g>
-      <text x="8" y="21" font-family="system-ui,sans-serif" font-size="12" fill="#fbbf24" font-weight="600">Nova Sonic</text>
+      <text x="10" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fbbf24" font-weight="600">Nova Sonic</text>
     </g>
 
     <!-- Nova Lite -->
-    <g transform="translate(-85, 0)">
-      <rect x="-60" y="0" width="120" height="32" rx="16" fill="#3b82f6" fill-opacity="0.1" stroke="#3b82f6" stroke-opacity="0.3" stroke-width="1"/>
-      <g transform="translate(-42,6) scale(0.83)" fill="#60a5fa">
-        <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.35 7.5 12 10.82 4.65 7.5 12 4.18zM4 8.96l7 3.5V20l-7-3.5V8.96zm9 7.54V12.46l7-3.5V17l-7 3.5z"/>
+    <g transform="translate(-105, 0)">
+      <rect x="-62" y="0" width="124" height="34" rx="17" fill="#3b82f6" fill-opacity="0.08" stroke="#3b82f6" stroke-opacity="0.25" stroke-width="1"/>
+      <g transform="translate(-44,7) scale(0.8)">
+        <path d="M8.4 14.3c2.9 1.4 6 1.4 8.9.3l.7.8c-3.4 1.4-7 1.4-10.3-.3-.4-.2-.4-.5 0-.7l.7-.1z" fill="#60a5fa"/>
+        <path d="M9.8 12.8c-.2.3-.2.7 0 .9l1.5-.8-.8-1.1c-.4.2-.6.6-.7 1zm5.1-3.8c0-.9-.7-1.3-1.5-1s-1.5.7-1.5 1.6v.5l2.5-1.1h.1c.3-.1.4 0 .4.3v-.3zm2.1.5l-6 2.6c-.3.1-.5.5-.5.9-.1 1 .6 2.1 1.5 2.6.3.1.6.1.8 0l5.8-2.5c.2-.1.4-.4.4-.6.1-1.1-.6-2.3-1.5-2.8-.2-.2-.4-.3-.5-.2z" fill="#60a5fa"/>
       </g>
-      <text x="14" y="21" font-family="system-ui,sans-serif" font-size="12" fill="#60a5fa" font-weight="600">Nova Lite</text>
+      <text x="12" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#60a5fa" font-weight="600">Nova Lite</text>
     </g>
 
     <!-- Nova Act -->
     <g transform="translate(65, 0)">
-      <rect x="-55" y="0" width="110" height="32" rx="16" fill="#10b981" fill-opacity="0.1" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
-      <g transform="translate(-37,6) scale(0.83)" fill="#34d399">
-        <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.18L19.35 7.5 12 10.82 4.65 7.5 12 4.18zM4 8.96l7 3.5V20l-7-3.5V8.96zm9 7.54V12.46l7-3.5V17l-7 3.5z"/>
+      <rect x="-58" y="0" width="116" height="34" rx="17" fill="#10b981" fill-opacity="0.08" stroke="#10b981" stroke-opacity="0.25" stroke-width="1"/>
+      <g transform="translate(-40,7) scale(0.8)">
+        <path d="M8.4 14.3c2.9 1.4 6 1.4 8.9.3l.7.8c-3.4 1.4-7 1.4-10.3-.3-.4-.2-.4-.5 0-.7l.7-.1z" fill="#34d399"/>
+        <path d="M9.8 12.8c-.2.3-.2.7 0 .9l1.5-.8-.8-1.1c-.4.2-.6.6-.7 1zm5.1-3.8c0-.9-.7-1.3-1.5-1s-1.5.7-1.5 1.6v.5l2.5-1.1h.1c.3-.1.4 0 .4.3v-.3zm2.1.5l-6 2.6c-.3.1-.5.5-.5.9-.1 1 .6 2.1 1.5 2.6.3.1.6.1.8 0l5.8-2.5c.2-.1.4-.4.4-.6.1-1.1-.6-2.3-1.5-2.8-.2-.2-.4-.3-.5-.2z" fill="#34d399"/>
       </g>
-      <text x="16" y="21" font-family="system-ui,sans-serif" font-size="12" fill="#34d399" font-weight="600">Nova Act</text>
+      <text x="14" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#34d399" font-weight="600">Nova Act</text>
     </g>
 
-    <!-- Gemini 3.1 (purple-blue gradient, Gemini star icon) -->
-    <g transform="translate(210, 0)">
-      <rect x="-62" y="0" width="124" height="32" rx="16" fill="#8b5cf6" fill-opacity="0.1" stroke="#8b5cf6" stroke-opacity="0.3" stroke-width="1"/>
-      <!-- Official Google Gemini star icon -->
-      <g transform="translate(-44,6) scale(0.83)" fill="#a78bfa">
+    <!-- Strands Agents -->
+    <g transform="translate(225, 0)">
+      <rect x="-72" y="0" width="144" height="34" rx="17" fill="#f59e0b" fill-opacity="0.06" stroke="#f59e0b" stroke-opacity="0.2" stroke-width="1"/>
+      <!-- Strands icon (agent/brain style) -->
+      <g transform="translate(-54,7) scale(0.8)" fill="#fbbf24">
+        <circle cx="12" cy="8" r="4" fill="none" stroke="#fbbf24" stroke-width="1.5"/>
+        <path d="M6,18 Q6,13 12,13 Q18,13 18,18" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="5" cy="11" r="2.5" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/>
+        <circle cx="19" cy="11" r="2.5" fill="none" stroke="#fbbf24" stroke-width="1" opacity="0.6"/>
+      </g>
+      <text x="8" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fbbf24" font-weight="600">Strands Agents</text>
+    </g>
+
+    <!-- Gemini 3.1 -->
+    <g transform="translate(395, 0)">
+      <rect x="-62" y="0" width="124" height="34" rx="17" fill="#8b5cf6" fill-opacity="0.08" stroke="#8b5cf6" stroke-opacity="0.25" stroke-width="1"/>
+      <!-- Official Gemini star -->
+      <g transform="translate(-44,7) scale(0.42)" fill="#a78bfa">
         <path d="M11.04 19.32Q12 21.51 12 24q0-2.49.93-4.68.96-2.19 2.58-3.81t3.81-2.55Q21.51 12 24 12q-2.49 0-4.68-.93a12.3 12.3 0 0 1-3.81-2.58 12.3 12.3 0 0 1-2.58-3.81Q12 2.49 12 0q0 2.49-.96 4.68-.93 2.19-2.55 3.81a12.3 12.3 0 0 1-3.81 2.58Q2.49 12 0 12q2.49 0 4.68.96 2.19.93 3.81 2.55t2.55 3.81"/>
       </g>
-      <text x="12" y="21" font-family="system-ui,sans-serif" font-size="12" fill="#a78bfa" font-weight="600">Gemini 3.1</text>
+      <text x="12" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#a78bfa" font-weight="600">Gemini 3.1</text>
     </g>
 
   </g>
 
-  <!-- Bottom accent -->
-  <rect x="350" y="285" width="500" height="2" rx="1" fill="url(#blue)" opacity="0.25"/>
+  <!-- Bottom accent line -->
+  <rect x="300" y="315" width="600" height="2" rx="1" fill="url(#blue)" opacity="0.2"/>
 
   <!-- Powered-by line -->
-  <text x="600" y="315" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#475569" letter-spacing="1">AMAZON NOVA  ·  STRANDS AGENTS  ·  GOOGLE GEMINI  ·  OPENWEATHER  ·  GEOAPIFY</text>
+  <text x="600" y="345" text-anchor="middle" font-family="system-ui,sans-serif" font-size="10" fill="#475569" letter-spacing="1.5">
+    AMAZON NOVA  ·  STRANDS AGENTS  ·  GOOGLE GEMINI  ·  GOOGLE MAPS  ·  OPENWEATHER
+  </text>
+
+  <!-- Version / hackathon note -->
+  <text x="600" y="365" text-anchor="middle" font-family="system-ui,sans-serif" font-size="9" fill="#334155" letter-spacing="0.5">Built for Amazon Nova Hackathon 2026</text>
 </svg>

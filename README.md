@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/NovaTour.png" alt="NovaTour" width="160"/>
+
 <img src="assets/hero-banner.svg" alt="NovaTour — AI Voice Travel Assistant" width="100%"/>
 
 <br/>
@@ -207,10 +209,14 @@ novatour/
 
 <div align="center">
 
+<img src="assets/logo.svg" alt="NovaTour" width="48"/>
+
 **NovaTour** — Voice-first travel planning powered by Amazon Nova
 
 <a href="https://aws.amazon.com/ai/generative-ai/nova/"><img src="https://img.shields.io/badge/Amazon_Nova-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="Amazon Nova"/></a>
 <a href="https://ai.google.dev/"><img src="https://img.shields.io/badge/Gemini_3.1-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini"/></a>
 <a href="https://github.com/strands-agents/sdk-python"><img src="https://img.shields.io/badge/Strands_Agents-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white" alt="Strands Agents"/></a>
+
+*Built for Amazon Nova Hackathon 2026*
 
 </div>

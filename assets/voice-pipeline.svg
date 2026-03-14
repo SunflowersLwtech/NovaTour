@@ -1,125 +1,160 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 420">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 430">
   <defs>
     <linearGradient id="vpBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0a0e1a"/>
-      <stop offset="100%" style="stop-color:#0f1729"/>
+      <stop offset="0%" stop-color="#0a0e1a"/>
+      <stop offset="100%" stop-color="#0f1729"/>
     </linearGradient>
     <linearGradient id="vpAmber" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#78350f"/>
-      <stop offset="100%" style="stop-color:#451a03"/>
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="100%" stop-color="#451a03"/>
     </linearGradient>
     <linearGradient id="vpBlue" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e3a5f"/>
-      <stop offset="100%" style="stop-color:#172554"/>
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#172554"/>
     </linearGradient>
+    <filter id="vpShadow"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/></filter>
   </defs>
 
-  <rect width="1100" height="420" fill="url(#vpBg)"/>
+  <rect width="1100" height="430" fill="url(#vpBg)"/>
 
   <!-- Title -->
-  <text x="550" y="35" font-family="system-ui, sans-serif" font-size="18" fill="#e2e8f0" text-anchor="middle" font-weight="700" letter-spacing="2">VOICE PIPELINE — BIDIRECTIONAL AUDIO STREAMING</text>
+  <text x="550" y="32" font-family="system-ui,sans-serif" font-size="17" fill="#e2e8f0" text-anchor="middle" font-weight="700" letter-spacing="3">VOICE PIPELINE</text>
+  <text x="550" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="middle" letter-spacing="1">Bidirectional audio streaming with dual asyncio tasks</text>
 
   <!-- ═══ FLOW: LEFT TO RIGHT ═══ -->
 
   <!-- Step 1: Browser Mic -->
-  <g transform="translate(40, 70)">
-    <rect width="160" height="130" rx="10" fill="url(#vpBlue)" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1.5"/>
-    <text x="80" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#93c5fd" text-anchor="middle" font-weight="700">Browser</text>
-    <line x1="20" y1="35" x2="140" y2="35" stroke="#3b82f6" stroke-opacity="0.2"/>
-    <text x="80" y="55" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">getUserMedia()</text>
-    <text x="80" y="72" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">ScriptProcessor</text>
-    <text x="80" y="89" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">resample -> 16kHz</text>
-    <text x="80" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">float32 -> int16</text>
-    <text x="80" y="123" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">PCM -> base64</text>
+  <g transform="translate(40, 72)">
+    <rect width="160" height="132" rx="12" fill="url(#vpBlue)" stroke="#3b82f6" stroke-opacity="0.35" stroke-width="1.5" filter="url(#vpShadow)"/>
+    <rect width="160" height="28" rx="12" fill="#172554"/>
+    <rect y="20" width="160" height="8" fill="#172554"/>
+    <!-- Mic icon -->
+    <g transform="translate(52,5) scale(0.65)" fill="#93c5fd">
+      <path d="M12,14c1.66,0,3-1.34,3-3V5c0-1.66-1.34-3-3-3S9,3.34,9,5v6C9,12.66,10.34,14,12,14z M17,11c0,2.76-2.24,5-5,5s-5-2.24-5-5H5c0,3.53,2.61,6.43,6,6.92V21h2v-3.08c3.39-.49,6-3.39,6-6.92H17z"/>
+    </g>
+    <text x="80" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#93c5fd" text-anchor="middle" font-weight="700">Browser</text>
+    <text x="80" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">getUserMedia()</text>
+    <text x="80" y="67" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">ScriptProcessor</text>
+    <text x="80" y="84" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">resample → 16kHz</text>
+    <text x="80" y="101" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">float32 → int16</text>
+    <text x="80" y="118" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">PCM → base64</text>
   </g>
 
   <!-- Arrow 1 -->
-  <g transform="translate(200, 115)">
-    <line x1="0" y1="20" x2="55" y2="20" stroke="#60a5fa" stroke-width="2"/>
-    <polygon points="53,16 60,20 53,24" fill="#60a5fa"/>
-    <text x="28" y="12" font-family="system-ui, sans-serif" font-size="8" fill="#60a5fa" text-anchor="middle">WS</text>
-    <text x="28" y="38" font-family="monospace" font-size="7" fill="#475569" text-anchor="middle">{"type":"audio"}</text>
+  <g transform="translate(200, 120)">
+    <line x1="0" y1="18" x2="55" y2="18" stroke="#60a5fa" stroke-width="2"/>
+    <polygon points="53,14 60,18 53,22" fill="#60a5fa"/>
+    <text x="28" y="10" font-family="system-ui,sans-serif" font-size="8" fill="#60a5fa" text-anchor="middle" font-weight="500">WS</text>
+    <text x="28" y="36" font-family="monospace" font-size="7" fill="#475569" text-anchor="middle">{"type":"audio"}</text>
   </g>
 
   <!-- Step 2: WebSocket Handler -->
-  <g transform="translate(260, 70)">
-    <rect width="160" height="130" rx="10" fill="#1e293b" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1.5"/>
-    <text x="80" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#fcd34d" text-anchor="middle" font-weight="700">WS Handler</text>
-    <line x1="20" y1="35" x2="140" y2="35" stroke="#f59e0b" stroke-opacity="0.2"/>
-    <text x="80" y="55" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">ws_handler.py</text>
-    <text x="80" y="72" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">LOD detection</text>
-    <text x="80" y="89" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Event conversion</text>
-    <text x="80" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">asyncio.wait()</text>
-    <text x="80" y="123" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Dual-task bridge</text>
+  <g transform="translate(260, 72)">
+    <rect width="160" height="132" rx="12" fill="#1e293b" stroke="#f59e0b" stroke-opacity="0.35" stroke-width="1.5" filter="url(#vpShadow)"/>
+    <rect width="160" height="28" rx="12" fill="#451a03"/>
+    <rect y="20" width="160" height="8" fill="#451a03"/>
+    <!-- Sync icon -->
+    <g transform="translate(50,5) scale(0.6)" fill="#fcd34d">
+      <path d="M12,4V1L8,5l4,4V6c3.31,0,6,2.69,6,6c0,1.01-.25,1.97-.7,2.8l1.46,1.46C19.54,15.03,20,13.57,20,12C20,7.58,16.42,4,12,4z M12,18c-3.31,0-6-2.69-6-6c0-1.01,.25-1.97,.7-2.8L5.24,7.74C4.46,8.97,4,10.43,4,12c0,4.42,3.58,8,8,8v3l4-4l-4-4V18z"/>
+    </g>
+    <text x="80" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">WS Handler</text>
+    <text x="80" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">ws_handler.py</text>
+    <text x="80" y="67" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">LOD detection</text>
+    <text x="80" y="84" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Event conversion</text>
+    <text x="80" y="101" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">asyncio.wait()</text>
+    <text x="80" y="118" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Dual-task bridge</text>
   </g>
 
   <!-- Arrow 2 -->
-  <g transform="translate(420, 115)">
-    <line x1="0" y1="20" x2="55" y2="20" stroke="#f59e0b" stroke-width="2"/>
-    <polygon points="53,16 60,20 53,24" fill="#f59e0b"/>
-    <text x="28" y="12" font-family="system-ui, sans-serif" font-size="8" fill="#f59e0b" text-anchor="middle">BidiInput</text>
+  <g transform="translate(420, 120)">
+    <line x1="0" y1="18" x2="55" y2="18" stroke="#f59e0b" stroke-width="2"/>
+    <polygon points="53,14 60,18 53,22" fill="#f59e0b"/>
+    <text x="28" y="10" font-family="system-ui,sans-serif" font-size="8" fill="#f59e0b" text-anchor="middle" font-weight="500">BidiInput</text>
   </g>
 
   <!-- Step 3: BidiAgent -->
-  <g transform="translate(480, 70)">
-    <rect width="180" height="130" rx="10" fill="url(#vpAmber)" stroke="#f59e0b" stroke-opacity="0.5" stroke-width="1.5"/>
-    <text x="90" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#fcd34d" text-anchor="middle" font-weight="700">BidiAgent</text>
-    <line x1="20" y1="35" x2="160" y2="35" stroke="#f59e0b" stroke-opacity="0.2"/>
-    <text x="90" y="55" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Strands SDK</text>
-    <text x="90" y="72" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">System prompt (LOD)</text>
-    <text x="90" y="89" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">8 tool bindings</text>
-    <text x="90" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Turn detection</text>
-    <text x="90" y="123" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Voice: Matthew</text>
+  <g transform="translate(480, 72)">
+    <rect width="180" height="132" rx="12" fill="url(#vpAmber)" stroke="#f59e0b" stroke-opacity="0.45" stroke-width="1.5" filter="url(#vpShadow)"/>
+    <rect width="180" height="28" rx="12" fill="#92400e" fill-opacity="0.5"/>
+    <rect y="20" width="180" height="8" fill="#92400e" fill-opacity="0.5"/>
+    <!-- Agent icon -->
+    <g transform="translate(62,5) scale(0.6)" fill="#fcd34d">
+      <circle cx="12" cy="8" r="4" fill="none" stroke="#fcd34d" stroke-width="2"/>
+      <path d="M6,20 Q6,14 12,14 Q18,14 18,20" fill="none" stroke="#fcd34d" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <text x="90" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">BidiAgent</text>
+    <text x="90" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Strands SDK</text>
+    <text x="90" y="67" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">System prompt (LOD)</text>
+    <text x="90" y="84" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">8 tool bindings</text>
+    <text x="90" y="101" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Turn detection</text>
+    <text x="90" y="118" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Voice: Matthew</text>
   </g>
 
   <!-- Arrow 3 -->
-  <g transform="translate(660, 115)">
-    <line x1="0" y1="20" x2="55" y2="20" stroke="#f59e0b" stroke-width="2"/>
-    <polygon points="53,16 60,20 53,24" fill="#f59e0b"/>
-    <text x="28" y="12" font-family="system-ui, sans-serif" font-size="8" fill="#f59e0b" text-anchor="middle">Bedrock</text>
+  <g transform="translate(660, 120)">
+    <line x1="0" y1="18" x2="55" y2="18" stroke="#f59e0b" stroke-width="2"/>
+    <polygon points="53,14 60,18 53,22" fill="#f59e0b"/>
+    <text x="28" y="10" font-family="system-ui,sans-serif" font-size="8" fill="#f59e0b" text-anchor="middle" font-weight="500">Bedrock</text>
   </g>
 
   <!-- Step 4: Nova Sonic -->
-  <g transform="translate(720, 70)">
-    <rect width="170" height="130" rx="10" fill="url(#vpAmber)" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="2"/>
-    <text x="85" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#fcd34d" text-anchor="middle" font-weight="700">Nova 2 Sonic</text>
-    <line x1="20" y1="35" x2="150" y2="35" stroke="#f59e0b" stroke-opacity="0.2"/>
-    <text x="85" y="55" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">AWS Bedrock</text>
-    <text x="85" y="72" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Speech-to-Speech</text>
-    <text x="85" y="89" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Real-time S2S</text>
-    <text x="85" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Tool calling</text>
-    <text x="85" y="123" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">PCM 16kHz I/O</text>
+  <g transform="translate(720, 72)">
+    <rect width="170" height="132" rx="12" fill="url(#vpAmber)" stroke="#f59e0b" stroke-opacity="0.55" stroke-width="2" filter="url(#vpShadow)"/>
+    <rect width="170" height="28" rx="12" fill="#92400e" fill-opacity="0.6"/>
+    <rect y="20" width="170" height="8" fill="#92400e" fill-opacity="0.6"/>
+    <!-- AWS icon mini -->
+    <g transform="translate(46,5) scale(0.55)" fill="#fcd34d">
+      <path d="M8.4 14.3c2.9 1.4 6 1.4 8.9.3l.7.8c-3.4 1.4-7 1.4-10.3-.3-.4-.2-.4-.5 0-.7l.7-.1z"/>
+      <path d="M9.8 12.8c-.2.3-.2.7 0 .9l1.5-.8-.8-1.1c-.4.2-.6.6-.7 1zm5.1-3.8c0-.9-.7-1.3-1.5-1s-1.5.7-1.5 1.6v.5l2.5-1.1h.1c.3-.1.4 0 .4.3v-.3zm2.1.5l-6 2.6c-.3.1-.5.5-.5.9-.1 1 .6 2.1 1.5 2.6.3.1.6.1.8 0l5.8-2.5c.2-.1.4-.4.4-.6.1-1.1-.6-2.3-1.5-2.8-.2-.2-.4-.3-.5-.2z"/>
+    </g>
+    <text x="85" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">Nova 2 Sonic</text>
+    <text x="85" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">AWS Bedrock</text>
+    <text x="85" y="67" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Speech-to-Speech</text>
+    <text x="85" y="84" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Real-time S2S</text>
+    <text x="85" y="101" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Tool calling</text>
+    <text x="85" y="118" font-family="system-ui,sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">PCM 16kHz I/O</text>
   </g>
 
-  <!-- Tool calling branch down from BidiAgent -->
-  <line x1="570" y1="200" x2="570" y2="240" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3"/>
-  <polygon points="566,238 570,246 574,238" fill="#10b981"/>
+  <!-- Tool calling branch -->
+  <line x1="570" y1="204" x2="570" y2="244" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <polygon points="566,242 570,250 574,242" fill="#10b981"/>
 
   <!-- Tools box -->
-  <g transform="translate(440, 250)">
-    <rect width="260" height="50" rx="8" fill="#14532d" fill-opacity="0.4" stroke="#10b981" stroke-opacity="0.4" stroke-width="1"/>
-    <text x="130" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="600">Tool Execution</text>
-    <text x="130" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">flights / hotels / places / weather / itinerary / booking</text>
+  <g transform="translate(440, 254)">
+    <rect width="260" height="50" rx="10" fill="#14532d" fill-opacity="0.35" stroke="#10b981" stroke-opacity="0.35" stroke-width="1" filter="url(#vpShadow)"/>
+    <text x="130" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="600">Tool Execution</text>
+    <text x="130" y="40" font-family="system-ui,sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">flights / hotels / places / weather / itinerary / booking</text>
   </g>
 
-  <!-- Return path (bottom) -->
-  <g transform="translate(40, 315)">
-    <rect width="850" height="85" rx="10" fill="#1e293b" stroke="#60a5fa" stroke-opacity="0.2" stroke-width="1"/>
-    <text x="425" y="25" font-family="system-ui, sans-serif" font-size="13" fill="#93c5fd" text-anchor="middle" font-weight="700">RETURN PATH — Audio + Events -> Client</text>
-    <text x="425" y="48" font-family="system-ui, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Nova Sonic generates speech response -> BidiAudioStreamEvent -> base64 PCM -> WebSocket -> AudioPlayer -> speakers</text>
-    <text x="425" y="65" font-family="system-ui, sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Transcripts, tool results, itinerary data, LOD changes, interruptions all forwarded as typed JSON events</text>
-    <text x="425" y="78" font-family="system-ui, sans-serif" font-size="9" fill="#475569" text-anchor="middle">BidiContentEndEvent with stop_reason="INTERRUPTED" clears the AudioPlayer buffer for barge-in support</text>
+  <!-- Return path -->
+  <g transform="translate(40, 320)">
+    <rect width="850" height="90" rx="12" fill="#1e293b" stroke="#60a5fa" stroke-opacity="0.15" stroke-width="1" filter="url(#vpShadow)"/>
+    <rect width="850" height="28" rx="12" fill="#172554" fill-opacity="0.5"/>
+    <rect y="20" width="850" height="8" fill="#172554" fill-opacity="0.5"/>
+    <!-- Speaker icon -->
+    <g transform="translate(370,5) scale(0.6)" fill="#93c5fd">
+      <path d="M3,9v6h4l5,5V4L7,9H3z M16.5,12c0-1.77-1.02-3.29-2.5-4.03v8.05C15.48,15.29,16.5,13.77,16.5,12z M14,3.23v2.06c2.89,.86,5,3.54,5,6.71s-2.11,5.85-5,6.71v2.06c4.01-.91,7-4.49,7-8.77S18.01,4.14,14,3.23z"/>
+    </g>
+    <text x="425" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#93c5fd" text-anchor="middle" font-weight="700">RETURN PATH — Audio + Events → Client</text>
+    <text x="425" y="48" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Nova Sonic generates speech → BidiAudioStreamEvent → base64 PCM → WebSocket → AudioPlayer → speakers</text>
+    <text x="425" y="65" font-family="system-ui,sans-serif" font-size="10" fill="#64748b" text-anchor="middle">Transcripts, tool results, itinerary data, LOD changes, interruptions forwarded as typed JSON events</text>
+    <text x="425" y="80" font-family="system-ui,sans-serif" font-size="9" fill="#475569" text-anchor="middle">BidiContentEndEvent with stop_reason="INTERRUPTED" clears AudioPlayer buffer for barge-in</text>
   </g>
 
   <!-- Fallback note -->
-  <g transform="translate(910, 70)">
-    <rect width="170" height="130" rx="10" fill="#1e293b" stroke="#ef4444" stroke-opacity="0.3" stroke-width="1" stroke-dasharray="4,3"/>
-    <text x="85" y="25" font-family="system-ui, sans-serif" font-size="12" fill="#fca5a5" text-anchor="middle" font-weight="600">Fallback</text>
-    <line x1="20" y1="35" x2="150" y2="35" stroke="#ef4444" stroke-opacity="0.15"/>
-    <text x="85" y="55" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">MockAgent</text>
-    <text x="85" y="72" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Text-mode echo</text>
-    <text x="85" y="89" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Same interface</text>
-    <text x="85" y="106" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Auto-retry once</text>
-    <text x="85" y="123" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">then graceful fallback</text>
+  <g transform="translate(910, 72)">
+    <rect width="170" height="132" rx="12" fill="#1e293b" stroke="#ef4444" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="5,3" filter="url(#vpShadow)"/>
+    <rect width="170" height="28" rx="12" fill="#7f1d1d" fill-opacity="0.3"/>
+    <rect y="20" width="170" height="8" fill="#7f1d1d" fill-opacity="0.3"/>
+    <!-- Warning icon -->
+    <g transform="translate(58,6) scale(0.55)" fill="#fca5a5">
+      <path d="M1,21h22L12,2L1,21z M13,18h-2v-2h2V18z M13,14h-2v-4h2V14z"/>
+    </g>
+    <text x="85" y="22" font-family="system-ui,sans-serif" font-size="12" fill="#fca5a5" text-anchor="middle" font-weight="600">Fallback</text>
+    <text x="85" y="50" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">MockAgent</text>
+    <text x="85" y="67" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Text-mode echo</text>
+    <text x="85" y="84" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Same interface</text>
+    <text x="85" y="101" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">Auto-retry once</text>
+    <text x="85" y="118" font-family="system-ui,sans-serif" font-size="10" fill="#94a3b8" text-anchor="middle">then graceful fallback</text>
   </g>
 </svg>

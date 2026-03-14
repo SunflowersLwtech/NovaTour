@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <defs>
+    <linearGradient id="goldRing" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D4A853"/>
+      <stop offset="50%" stop-color="#C49B3C"/>
+      <stop offset="100%" stop-color="#B8912F"/>
+    </linearGradient>
+    <linearGradient id="navyFill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1B2A4A"/>
+      <stop offset="100%" stop-color="#162240"/>
+    </linearGradient>
+    <filter id="logoShadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Outer navy ring -->
+  <circle cx="100" cy="100" r="90" fill="url(#navyFill)" filter="url(#logoShadow)"/>
+  <circle cx="100" cy="100" r="90" fill="none" stroke="#1B2A4A" stroke-width="2"/>
+
+  <!-- Gold ring -->
+  <circle cx="100" cy="100" r="72" fill="none" stroke="url(#goldRing)" stroke-width="5"/>
+
+  <!-- Inner white area -->
+  <circle cx="100" cy="100" r="65" fill="white"/>
+
+  <!-- Cardinal direction labels -->
+  <text x="100" y="48" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#1B2A4A" text-anchor="middle">N</text>
+  <text x="100" y="166" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#1B2A4A" text-anchor="middle">S</text>
+  <text x="42" y="106" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#1B2A4A" text-anchor="middle">W</text>
+  <text x="158" y="106" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="700" fill="#1B2A4A" text-anchor="middle">E</text>
+
+  <!-- Compass needle / chat bubble center -->
+  <circle cx="100" cy="100" r="28" fill="#1B2A4A"/>
+  <!-- Chat bubble tail -->
+  <path d="M85,118 L78,132 L98,118" fill="#1B2A4A"/>
+
+  <!-- Compass star (4-pointed) -->
+  <g transform="translate(100,100)">
+    <path d="M0,-12 L3,-3 L12,0 L3,3 L0,12 L-3,3 L-12,0 L-3,-3 Z" fill="#C49B3C"/>
+    <!-- Center dot -->
+    <circle cx="0" cy="0" r="3" fill="#C49B3C"/>
+  </g>
+</svg>
