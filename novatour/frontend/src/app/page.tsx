@@ -9,10 +9,13 @@ import { NovaActViewer } from "@/ui/NovaActViewer";
 import { TripMap } from "@/ui/TripMap";
 
 export type InteractionMode = "voice" | "text";
+type SideTab = "itinerary" | "map";
 
 export default function Home() {
   const sessionId = `session-${useId().replace(/:/g, "")}`;
-  const [interactionMode, setInteractionMode] = useState<InteractionMode>("voice");
+  const [interactionMode, setInteractionMode] =
+    useState<InteractionMode>("voice");
+  const [sideTab, setSideTab] = useState<SideTab>("itinerary");
 
   const {
     isConnected,
@@ -58,8 +61,8 @@ export default function Home() {
   }, [startListening]);
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950">
-      {/* Top voice panel */}
+    <div className="flex flex-col h-screen bg-deep">
+      {/* Compact header toolbar */}
       <VoicePanel
         interactionMode={interactionMode}
         isConnected={isConnected}
@@ -79,15 +82,15 @@ export default function Home() {
 
       {/* Error banner */}
       {error && (
-        <div className="px-4 py-2 bg-red-900/50 border-b border-red-700 text-red-300 text-sm">
+        <div className="px-4 py-2 text-sm bg-err/10 border-b border-err/20 text-err">
           {error}
         </div>
       )}
 
-      {/* Three-column layout */}
+      {/* Main content: Chat + Side panel */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Chat — always available (text fallback via REST when disconnected) */}
-        <div className="w-1/3 min-w-[320px] border-r border-gray-700">
+        {/* Chat — primary panel */}
+        <div className="flex-1 min-w-[320px] border-r border-subtle">
           <ChatInterface
             interactionMode={interactionMode}
             messages={messages}
@@ -97,23 +100,37 @@ export default function Home() {
           />
         </div>
 
-        {/* Center: Itinerary */}
-        <div className="flex-1 border-r border-gray-700">
-          <ItineraryWorkspace itinerary={itinerary} />
-        </div>
-
-        {/* Right: Map */}
-        <div className="w-1/3 min-w-[300px] bg-gray-900 flex flex-col">
-          <div className="px-4 py-3 border-b border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-300">Map</h2>
+        {/* Side panel — hidden on small screens */}
+        <div className="hidden lg:flex w-[400px] flex-col bg-surface">
+          {/* Tab bar */}
+          <div className="flex border-b border-subtle">
+            {(["itinerary", "map"] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setSideTab(tab)}
+                className={`flex-1 px-4 py-3 text-xs font-semibold uppercase tracking-[0.15em] transition-colors ${
+                  sideTab === tab
+                    ? "text-accent border-b-2 border-accent"
+                    : "text-dim border-b-2 border-transparent hover:text-secondary"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
-          <div className="flex-1">
-            <TripMap itinerary={itinerary} />
+
+          {/* Tab content */}
+          <div className="flex-1 overflow-hidden">
+            {sideTab === "itinerary" ? (
+              <ItineraryWorkspace itinerary={itinerary} />
+            ) : (
+              <TripMap itinerary={itinerary} />
+            )}
           </div>
         </div>
       </div>
 
-      {/* NovaActViewer overlay — with cancel wired */}
+      {/* Booking overlay */}
       <NovaActViewer bookingProgress={bookingProgress} onCancel={cancelBooking} />
     </div>
   );

@@ -50,14 +50,23 @@ async def chat(request: ChatRequest) -> ChatResponse:
         return ChatResponse(reply=reply, session_id=request.session_id)
 
     except Exception as e:
-        logger.warning(f"Chat API error: {e}")
-        return ChatResponse(
-            reply=(
-                "I'm temporarily unable to connect to my travel services. "
-                "While I reconnect, here are some things I can help with: "
-                "flight searches, hotel comparisons, weather checks, "
-                "route planning, and full itinerary creation. "
-                "Please try again in a moment!"
-            ),
-            session_id=request.session_id,
-        )
+        logger.warning(f"Chat API error: {type(e).__name__}: {e}")
+
+        error_name = type(e).__name__
+        if "Throttling" in error_name or "throttl" in str(e).lower():
+            detail = (
+                "[Throttled] The AI model has reached its daily token limit. "
+                "Please wait a while before trying again, or check your AWS Bedrock quotas."
+            )
+        elif "Credential" in error_name or "Access" in error_name:
+            detail = (
+                "[Auth Error] AWS credentials are missing or invalid. "
+                "Please check your .env file for AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY."
+            )
+        else:
+            detail = (
+                f"[{error_name}] I'm temporarily unable to connect to travel services. "
+                "Please try again in a moment."
+            )
+
+        return ChatResponse(reply=detail, session_id=request.session_id)

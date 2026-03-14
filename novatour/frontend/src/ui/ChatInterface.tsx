@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { ToolCallInfo, TranscriptMessage } from "@/types/voice";
 
+const SUGGESTIONS = [
+  "Plan a 3-day trip to Tokyo",
+  "What's the weather in Paris?",
+  "Find flights to Bali",
+  "Create a NYC itinerary",
+];
+
 interface ChatInterfaceProps {
   interactionMode: "voice" | "text";
   messages: TranscriptMessage[];
@@ -33,132 +40,140 @@ export function ChatInterface({
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-700">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold text-gray-300">Chat</h2>
-          <span
-            className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${
-              interactionMode === "voice"
-                ? "bg-cyan-500/15 text-cyan-300"
-                : "bg-slate-800 text-slate-300"
-            }`}
-          >
-            {interactionMode === "voice" ? "Voice assisted" : "Text first"}
-          </span>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {messages.length === 0 && (
-          <div className="text-center text-gray-500 text-sm mt-8">
-            <p>
-              {interactionMode === "voice"
-                ? "Voice mode is active. You can speak, or type if that is faster."
-                : "Text mode is active. Type below, or switch back to voice when you want live audio."}
+    <div className="flex flex-col h-full bg-deep">
+      {/* Messages area */}
+      <div className="flex-1 overflow-y-auto px-6 py-4">
+        {messages.length === 0 ? (
+          /* Empty state with welcome + suggestions */
+          <div className="flex flex-col items-center justify-center h-full">
+            <h2 className="text-3xl font-extrabold tracking-tight mb-1">
+              Nova<span className="text-accent">Tour</span>
+            </h2>
+            <p className="text-secondary text-sm mb-8">
+              Your AI travel companion. Ask me anything.
             </p>
-            <p className="text-xs mt-1 opacity-60">
+            <div className="grid grid-cols-2 gap-2 max-w-sm w-full">
+              {SUGGESTIONS.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onSendText(s)}
+                  className="text-left px-4 py-3 rounded-xl bg-elevated border border-subtle text-sm text-secondary hover:text-primary hover:border-accent/30 hover:bg-raised transition-all"
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            <p className="text-dim text-xs mt-6">
               {interactionMode === "voice"
                 ? isConnected
-                  ? "The live session is connected and ready."
-                  : "Connect voice above if you want microphone input."
-                : "Text chat works without any voice connection."}
+                  ? "Voice session is connected. Speak or type below."
+                  : "Connect voice above, or just type a message."
+                : "Type a message below to get started."}
             </p>
           </div>
-        )}
-
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`max-w-[85%] rounded-lg px-4 py-2 text-sm ${
-                msg.role === "user"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-700 text-gray-100"
-              } ${!msg.is_final ? "opacity-70" : ""}`}
-            >
-              <p className="whitespace-pre-wrap">{msg.text}</p>
-              {!msg.is_final && (
-                <span className="text-xs opacity-50">...</span>
-              )}
-            </div>
-          </div>
-        ))}
-
-        {/* Active tool calls */}
-        {toolCalls
-          .filter((t) => t.status === "calling")
-          .map((tc) => (
-            <div
-              key={`${tc.name}-${tc.timestamp}`}
-              className="flex items-center gap-2 px-3 py-2 bg-yellow-900/30 rounded-lg border border-yellow-700/50"
-            >
-              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-              <span className="text-xs text-yellow-300">
-                Calling {tc.name}...
-              </span>
-            </div>
-          ))}
-
-        {/* Completed tool calls with results */}
-        {toolCalls
-          .filter((t) => t.status === "complete")
-          .slice(-5)
-          .map((tc) => (
-            <div
-              key={`${tc.name}-${tc.timestamp}`}
-              className="px-3 py-2 bg-green-900/20 rounded-lg border border-green-700/30"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full" />
-                <span className="text-xs text-green-300 font-medium">
-                  {tc.name}
-                </span>
+        ) : (
+          /* Message list */
+          <div className="space-y-3 max-w-2xl mx-auto">
+            {messages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${
+                  msg.role === "user" ? "justify-end" : "justify-start"
+                } msg-appear`}
+              >
+                <div
+                  className={`max-w-[80%] px-4 py-2.5 text-sm leading-relaxed ${
+                    msg.role === "user"
+                      ? "bg-bubble text-bubble-text"
+                      : "bg-elevated text-primary border border-subtle"
+                  } ${!msg.is_final ? "opacity-60" : ""}`}
+                  style={{
+                    borderRadius:
+                      msg.role === "user"
+                        ? "16px 16px 4px 16px"
+                        : "16px 16px 16px 4px",
+                  }}
+                >
+                  <p className="whitespace-pre-wrap">{msg.text}</p>
+                  {!msg.is_final && (
+                    <span className="text-xs text-dim mt-1 inline-block">
+                      ...
+                    </span>
+                  )}
+                </div>
               </div>
-              {tc.result && (
-                <p className="text-xs text-gray-400 mt-1 line-clamp-3">
-                  {tc.result.slice(0, 200)}
-                  {tc.result.length > 200 ? "..." : ""}
-                </p>
-              )}
-            </div>
-          ))}
+            ))}
 
-        <div ref={messagesEndRef} />
+            {/* Active tool calls */}
+            {toolCalls
+              .filter((t) => t.status === "calling")
+              .map((tc) => (
+                <div
+                  key={`${tc.name}-${tc.timestamp}`}
+                  className="flex items-center gap-2.5 px-4 py-2.5 bg-accent/10 rounded-xl border border-accent/15 msg-appear"
+                >
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent pulse-dot" />
+                  <span className="text-xs text-accent font-medium">
+                    {tc.name}
+                  </span>
+                </div>
+              ))}
+
+            {/* Completed tool calls */}
+            {toolCalls
+              .filter((t) => t.status === "complete")
+              .slice(-5)
+              .map((tc) => (
+                <div
+                  key={`${tc.name}-${tc.timestamp}`}
+                  className="px-4 py-2.5 bg-ok/5 rounded-xl border border-ok/10"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-ok" />
+                    <span className="text-xs text-ok font-medium">
+                      {tc.name}
+                    </span>
+                  </div>
+                  {tc.result && (
+                    <p className="text-xs text-dim mt-1.5 line-clamp-2">
+                      {tc.result.slice(0, 200)}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+            <div ref={messagesEndRef} />
+          </div>
+        )}
       </div>
 
-      {/* Input — always enabled (REST fallback when disconnected) */}
-      <form
-        onSubmit={handleSubmit}
-        className="p-3 border-t border-gray-700"
-      >
-        <div className="flex gap-2">
+      {/* Input area */}
+      <div className="px-6 py-4 border-t border-subtle">
+        <form
+          onSubmit={handleSubmit}
+          className="flex gap-2 max-w-2xl mx-auto"
+        >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
               interactionMode === "voice"
-                ? isConnected
-                  ? "Type a message while voice mode stays active..."
-                  : "Type a message, or connect voice above..."
-                : "Type a message in text mode..."
+                ? "Type a message or speak..."
+                : "Where would you like to go?"
             }
-            className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-2 text-sm border border-gray-600 focus:border-blue-500 focus:outline-none"
+            className="flex-1 bg-elevated text-primary rounded-xl px-4 py-3 text-sm border border-subtle placeholder:text-dim focus:border-accent/50 focus:outline-none transition-colors"
           />
           <button
             type="submit"
             disabled={!input.trim()}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-5 py-3 bg-accent text-deep rounded-xl text-sm font-semibold hover:bg-accent-hover disabled:opacity-30 disabled:cursor-not-allowed transition-all"
           >
             Send
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

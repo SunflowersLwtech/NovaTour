@@ -34,3 +34,20 @@ __pycache__/
 
 # Reference material (SDK repos, samples, reference projects — local only)
 reference/
+
+# AI assistant local config (non-business)
+.claude/
+.playwright-mcp/
+
+# Playwright artifacts (reports, screenshots, traces, videos)
+playwright-report/
+test-results/
+blob-report/
+screenshots/
+**/playwright-report/
+**/test-results/
+**/blob-report/
+**/playwright/.cache/
+**/test-results/**/trace.zip
+**/test-results/**/*.trace
+**/test-results/**/*.webm

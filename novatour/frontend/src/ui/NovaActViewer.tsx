@@ -25,23 +25,23 @@ export function NovaActViewer({
   if (!bookingProgress) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 w-96 bg-gray-800 rounded-lg border border-gray-600 shadow-2xl overflow-hidden z-50">
+    <div className="fixed bottom-4 right-4 w-96 bg-elevated rounded-xl border border-subtle shadow-2xl overflow-hidden z-50">
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-2 bg-gray-700 cursor-pointer"
+        className="flex items-center justify-between px-4 py-2.5 bg-surface cursor-pointer border-b border-subtle"
         onClick={() => setExpanded(!expanded)}
       >
         <div className="flex items-center gap-2">
           <div
             className={`w-2 h-2 rounded-full ${
               bookingProgress.status === "complete"
-                ? "bg-green-400"
+                ? "bg-ok"
                 : bookingProgress.status === "error"
-                ? "bg-red-400"
-                : "bg-yellow-400 animate-pulse"
+                ? "bg-err"
+                : "bg-warn pulse-dot"
             }`}
           />
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-semibold text-primary">
             Nova Act — Booking
           </span>
         </div>
@@ -54,12 +54,12 @@ export function NovaActViewer({
                   e.stopPropagation();
                   onCancel();
                 }}
-                className="text-xs text-red-400 hover:text-red-300"
+                className="text-xs text-err hover:text-err/80 font-medium"
               >
                 Cancel
               </button>
             )}
-          <span className="text-gray-400 text-xs">
+          <span className="text-dim text-xs">
             {expanded ? "▼" : "▲"}
           </span>
         </div>
@@ -68,9 +68,8 @@ export function NovaActViewer({
       {/* Content */}
       {expanded && (
         <div className="p-4">
-          {/* Screenshot */}
           {bookingProgress.screenshot && (
-            <div className="mb-3 rounded overflow-hidden border border-gray-600">
+            <div className="mb-3 rounded-lg overflow-hidden border border-subtle">
               <Image
                 loader={passthroughImageLoader}
                 src={bookingProgress.screenshot}
@@ -83,18 +82,16 @@ export function NovaActViewer({
             </div>
           )}
 
-          {/* Status */}
-          <p className="text-sm text-gray-300">{bookingProgress.step}</p>
+          <p className="text-sm text-secondary">{bookingProgress.step}</p>
 
-          {/* Progress bar */}
-          <div className="mt-3 h-1 bg-gray-700 rounded-full overflow-hidden">
+          <div className="mt-3 h-1 bg-subtle rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
                 bookingProgress.status === "complete"
-                  ? "w-full bg-green-500"
+                  ? "w-full bg-ok"
                   : bookingProgress.status === "error"
-                  ? "w-full bg-red-500"
-                  : "w-2/3 bg-blue-500 animate-pulse"
+                  ? "w-full bg-err"
+                  : "w-2/3 bg-accent pulse-dot"
               }`}
             />
           </div>

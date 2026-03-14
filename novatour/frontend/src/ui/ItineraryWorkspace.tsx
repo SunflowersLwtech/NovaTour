@@ -12,40 +12,45 @@ const passthroughImageLoader = ({ src }: ImageLoaderProps) => src;
 export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
   if (!itinerary) {
     return (
-      <div className="flex flex-col h-full bg-gray-900 items-center justify-center text-gray-500">
-        <svg className="w-16 h-16 mb-4 opacity-30" fill="currentColor" viewBox="0 0 24 24">
+      <div className="flex flex-col h-full items-center justify-center text-dim px-8">
+        <svg
+          className="w-12 h-12 mb-3 opacity-20"
+          fill="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z" />
         </svg>
-        <p className="text-sm">No itinerary yet</p>
-        <p className="text-xs mt-1 opacity-60">
-          Ask NovaTour to plan a trip!
-        </p>
+        <p className="text-sm font-medium text-secondary">No itinerary yet</p>
+        <p className="text-xs mt-1">Ask NovaTour to plan a trip</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-900">
+    <div className="flex flex-col h-full bg-surface">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-700">
-        <h2 className="text-sm font-semibold text-gray-300">
-          {itinerary.destination} — {itinerary.days} Days
+      <div className="px-5 py-4 border-b border-subtle">
+        <h2 className="text-base font-bold text-primary">
+          {itinerary.destination}
         </h2>
-        {itinerary.mock && (
-          <span className="text-xs text-yellow-400">(Mock Data)</span>
-        )}
+        <p className="text-xs text-secondary mt-0.5">
+          {itinerary.days} day{itinerary.days > 1 ? "s" : ""}
+          {itinerary.mock && (
+            <span className="ml-2 text-warn">(mock data)</span>
+          )}
+        </p>
       </div>
 
       {/* Day plans */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {itinerary.itinerary.map((day) => (
           <div
             key={day.day}
-            className="bg-gray-800 rounded-lg overflow-hidden border border-gray-700"
+            className="rounded-xl border border-subtle overflow-hidden bg-elevated"
           >
             {/* Day header */}
-            <div className="px-4 py-2 bg-blue-900/30 border-b border-gray-700">
-              <h3 className="text-sm font-semibold text-blue-300">
+            <div className="px-4 py-2.5 border-b border-subtle bg-accent/5">
+              <h3 className="text-sm font-semibold text-accent">
                 Day {day.day}: {day.theme}
               </h3>
             </div>
@@ -53,11 +58,8 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
             {/* Activities */}
             <div className="p-3 space-y-2">
               {day.activities.map((act, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 text-sm"
-                >
-                  <span className="text-blue-400 font-mono text-xs mt-0.5 w-12 flex-shrink-0">
+                <div key={i} className="flex items-start gap-3 text-sm">
+                  <span className="text-accent font-mono text-xs mt-0.5 w-12 shrink-0">
                     {act.time}
                   </span>
                   {act.photo_url && (
@@ -65,9 +67,9 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
                       loader={passthroughImageLoader}
                       src={act.photo_url}
                       alt={act.activity}
-                      width={56}
-                      height={56}
-                      className="w-14 h-14 rounded object-cover flex-shrink-0"
+                      width={48}
+                      height={48}
+                      className="w-12 h-12 rounded-lg object-cover shrink-0"
                       loading="lazy"
                       unoptimized
                       onError={(event) => {
@@ -75,9 +77,9 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
                       }}
                     />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-gray-200">{act.activity}</p>
-                    <p className="text-xs text-gray-500">
+                  <div className="min-w-0">
+                    <p className="text-primary text-sm">{act.activity}</p>
+                    <p className="text-xs text-dim mt-0.5">
                       {act.location} · {act.duration}
                     </p>
                   </div>
@@ -89,19 +91,17 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
 
         {/* Budget */}
         {itinerary.budget_estimate && (
-          <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-            <h3 className="text-sm font-semibold text-gray-300 mb-2">
-              Budget Estimate
-            </h3>
-            <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-xl border border-subtle p-4 bg-elevated">
+            <h3 className="text-sm font-semibold text-primary mb-2">Budget</h3>
+            <div className="grid grid-cols-2 gap-1.5 text-sm">
               {Object.entries(itinerary.budget_estimate).map(([key, val]) => (
                 <div key={key} className="flex justify-between">
-                  <span className="text-gray-400 capitalize">{key}</span>
+                  <span className="text-dim capitalize">{key}</span>
                   <span
                     className={
                       key === "total"
-                        ? "text-blue-300 font-semibold"
-                        : "text-gray-300"
+                        ? "text-accent font-semibold"
+                        : "text-secondary"
                     }
                   >
                     {val}
