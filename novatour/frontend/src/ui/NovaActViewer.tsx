@@ -1,5 +1,6 @@
 "use client";
 
+import Image, { type ImageLoaderProps } from "next/image";
 import { useState } from "react";
 
 interface BookingProgress {
@@ -12,6 +13,8 @@ interface NovaActViewerProps {
   bookingProgress: BookingProgress | null;
   onCancel?: () => void;
 }
+
+const passthroughImageLoader = ({ src }: ImageLoaderProps) => src;
 
 export function NovaActViewer({
   bookingProgress,
@@ -68,10 +71,14 @@ export function NovaActViewer({
           {/* Screenshot */}
           {bookingProgress.screenshot && (
             <div className="mb-3 rounded overflow-hidden border border-gray-600">
-              <img
+              <Image
+                loader={passthroughImageLoader}
                 src={bookingProgress.screenshot}
                 alt="Booking progress"
-                className="w-full"
+                width={1200}
+                height={675}
+                className="w-full h-auto"
+                unoptimized
               />
             </div>
           )}

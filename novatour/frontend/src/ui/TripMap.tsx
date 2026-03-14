@@ -1,66 +1,206 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import type { ItineraryData, Activity } from "@/types/voice";
+import type { Activity, ItineraryData } from "@/types/voice";
 
 interface TripMapProps {
   itinerary: ItineraryData | null;
 }
 
-// MapLibre CDN URLs
+type LngLat = [number, number];
+type MapStatus = "loading" | "ready" | "error" | "disabled";
+
+interface MapLibreRasterSource {
+  type: "raster";
+  tiles: string[];
+  tileSize: number;
+  attribution: string;
+}
+
+interface MapLibreRasterLayer {
+  id: string;
+  type: "raster";
+  source: string;
+  minzoom: number;
+  maxzoom: number;
+}
+
+interface MapLibreLineLayer {
+  id: string;
+  type: "line";
+  source: string;
+  layout: { "line-cap": "round"; "line-join": "round" };
+  paint: {
+    "line-color": string;
+    "line-width": number;
+    "line-opacity": number;
+  };
+}
+
+interface MapLibreGeoJsonFeatureCollection {
+  type: "FeatureCollection";
+  features: Array<{
+    type: "Feature";
+    geometry: {
+      type: "LineString";
+      coordinates: LngLat[];
+    };
+    properties: Record<string, never>;
+  }>;
+}
+
+interface MapLibreBounds {
+  extend(coordinates: LngLat): void;
+}
+
+interface MapLibreMap {
+  addControl(control: unknown): void;
+  on(event: "load", handler: () => void): void;
+  addSource(
+    id: string,
+    source: { type: "geojson"; data: MapLibreGeoJsonFeatureCollection }
+  ): void;
+  addLayer(layer: MapLibreLineLayer): void;
+  getLayer(id: string): unknown;
+  removeLayer(id: string): void;
+  getSource(id: string): unknown;
+  removeSource(id: string): void;
+  fitBounds(
+    bounds: MapLibreBounds,
+    options: { padding: number; duration: number; maxZoom: number }
+  ): void;
+  remove(): void;
+}
+
+interface MapLibrePopup {
+  setHTML(html: string): MapLibrePopup;
+}
+
+interface MapLibreMarker {
+  setLngLat(coordinates: LngLat): MapLibreMarker;
+  setPopup(popup: MapLibrePopup): MapLibreMarker;
+  addTo(map: MapLibreMap): MapLibreMarker;
+  remove(): void;
+}
+
+interface MapLibreNamespace {
+  Map: new (options: {
+    container: HTMLElement;
+    style: {
+      version: number;
+      sources: Record<string, MapLibreRasterSource>;
+      layers: MapLibreRasterLayer[];
+    };
+    center: LngLat;
+    zoom: number;
+    attributionControl: boolean;
+  }) => MapLibreMap;
+  NavigationControl: new (options: { showCompass: boolean }) => unknown;
+  Popup: new (options: { offset: number; closeButton: boolean }) => MapLibrePopup;
+  Marker: new (options: { element: HTMLElement }) => MapLibreMarker;
+  LngLatBounds: new () => MapLibreBounds;
+}
+
+type RouteGeometry =
+  | { type: "LineString"; coordinates: LngLat[] }
+  | { type: "MultiLineString"; coordinates: LngLat[][] };
+
+interface GeoapifyRouteResponse {
+  features?: Array<{
+    geometry?: RouteGeometry;
+  }>;
+}
+
 const MAPLIBRE_JS = "https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css";
+const DAY_COLORS = [
+  "#3b82f6",
+  "#22c55e",
+  "#f97316",
+  "#ef4444",
+  "#a855f7",
+  "#ec4899",
+  "#14b8a6",
+  "#eab308",
+];
 
-// Day colors for markers
-const DAY_COLORS = ["#3b82f6", "#22c55e", "#f97316", "#ef4444", "#a855f7", "#ec4899", "#14b8a6", "#eab308"];
+const EMPTY_STATE_STYLE: React.CSSProperties = {
+  width: "100%",
+  height: "100%",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#1a1a2e",
+  color: "#9ca3af",
+  fontSize: "14px",
+  borderRadius: "8px",
+  padding: "16px",
+  textAlign: "center",
+};
 
 const ensureScript = (src: string) =>
   new Promise<void>((resolve, reject) => {
-    if (document.querySelector(`script[src="${src}"]`)) return resolve();
-    const s = document.createElement("script");
-    s.src = src;
-    s.async = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-    document.head.appendChild(s);
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = src;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(script);
   });
 
 const ensureCss = (href: string) => {
   if (document.querySelector(`link[href="${href}"]`)) return;
-  const l = document.createElement("link");
-  l.rel = "stylesheet";
-  l.href = href;
-  document.head.appendChild(l);
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = href;
+  document.head.appendChild(link);
 };
 
-/** Extract lat/lng from an activity that may have coordinate fields */
-const getCoords = (
-  activity: Activity
-): { lat: number; lng: number } | null => {
-  const a = activity as Activity & { lat?: number; lng?: number; latitude?: number; longitude?: number };
-  const lat = a.lat ?? a.latitude;
-  const lng = a.lng ?? a.longitude;
-  if (typeof lat === "number" && typeof lng === "number" && Number.isFinite(lat) && Number.isFinite(lng)) {
+const getMapLibre = (): MapLibreNamespace | null =>
+  (window as Window & { maplibregl?: MapLibreNamespace }).maplibregl ?? null;
+
+const getCoords = (activity: Activity): { lat: number; lng: number } | null => {
+  const lat = activity.latitude;
+  const lng = activity.longitude;
+
+  if (
+    typeof lat === "number" &&
+    typeof lng === "number" &&
+    Number.isFinite(lat) &&
+    Number.isFinite(lng)
+  ) {
     return { lat, lng };
   }
+
   return null;
 };
 
+const renderEmptyState = (message: string, color = "#9ca3af") => (
+  <div style={{ ...EMPTY_STATE_STYLE, color }}>{message}</div>
+);
+
 export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
+  const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
+  const mapRef = useRef<MapLibreMap | null>(null);
+  const markersRef = useRef<MapLibreMarker[]>([]);
   const routeLayerIds = useRef<string[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [mapStatus, setMapStatus] = useState<MapStatus>(() =>
+    apiKey ? "loading" : "disabled"
+  );
   const [mapReady, setMapReady] = useState(false);
 
-  // Initialize map
   useEffect(() => {
     let cancelled = false;
-    const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+
     if (!apiKey) {
       console.warn("TripMap: NEXT_PUBLIC_GEOAPIFY_API_KEY is not set");
-      setLoading(false);
       return;
     }
 
@@ -69,22 +209,21 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
     const init = async () => {
       try {
         await ensureScript(MAPLIBRE_JS);
-      } catch (err) {
-        console.error("TripMap: Failed to load MapLibre GL JS", err);
-        setLoading(false);
+      } catch (error) {
+        console.error("TripMap: Failed to load MapLibre GL JS", error);
+        if (!cancelled) setMapStatus("error");
         return;
       }
 
       if (cancelled || !containerRef.current) return;
 
-      const maplibregl = (window as any).maplibregl;
+      const maplibregl = getMapLibre();
       if (!maplibregl) {
-        setLoading(false);
+        if (!cancelled) setMapStatus("error");
         return;
       }
 
       const tileUrl = `https://maps.geoapify.com/v1/tile/dark-matter-brown-purple/{z}/{x}/{y}.png?apiKey=${apiKey}`;
-
       const map = new maplibregl.Map({
         container: containerRef.current,
         style: {
@@ -94,7 +233,8 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
               type: "raster",
               tiles: [tileUrl],
               tileSize: 256,
-              attribution: '&copy; <a href="https://www.geoapify.com/">Geoapify</a>',
+              attribution:
+                '&copy; <a href="https://www.geoapify.com/">Geoapify</a>',
             },
           },
           layers: [
@@ -114,10 +254,9 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
 
       map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
       map.on("load", () => {
-        if (!cancelled) {
-          setMapReady(true);
-          setLoading(false);
-        }
+        if (cancelled) return;
+        setMapReady(true);
+        setMapStatus("ready");
       });
 
       mapRef.current = map;
@@ -127,83 +266,108 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
 
     return () => {
       cancelled = true;
-      setMapReady(false);
-      setLoading(false);
-      markersRef.current.forEach((m) => {
-        try { m.remove(); } catch { /* noop */ }
+      markersRef.current.forEach((marker) => {
+        try {
+          marker.remove();
+        } catch {
+          // noop
+        }
       });
       markersRef.current = [];
-      try { mapRef.current?.remove(); } catch { /* noop */ }
+
+      try {
+        mapRef.current?.remove();
+      } catch {
+        // noop
+      }
       mapRef.current = null;
     };
-  }, []);
+  }, [apiKey]);
 
-  // Update markers and route when itinerary changes
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !mapReady) return;
 
-    const maplibregl = (window as any).maplibregl;
+    const maplibregl = getMapLibre();
     if (!maplibregl) return;
 
-    const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+    const controller = new AbortController();
 
-    // Clear old markers
-    markersRef.current.forEach((m) => {
-      try { m.remove(); } catch { /* noop */ }
+    markersRef.current.forEach((marker) => {
+      try {
+        marker.remove();
+      } catch {
+        // noop
+      }
     });
     markersRef.current = [];
 
-    // Clear old route layers/sources
     routeLayerIds.current.forEach((id) => {
-      if (map.getLayer(id)) {
-        try { map.removeLayer(id); } catch { /* noop */ }
+      if (!map.getLayer(id)) return;
+      try {
+        map.removeLayer(id);
+      } catch {
+        // noop
       }
     });
     routeLayerIds.current = [];
+
     if (map.getSource("trip-route")) {
-      try { map.removeSource("trip-route"); } catch { /* noop */ }
+      try {
+        map.removeSource("trip-route");
+      } catch {
+        // noop
+      }
     }
 
-    if (!itinerary) return;
+    if (!itinerary) {
+      return () => {
+        controller.abort();
+      };
+    }
 
-    // Collect activities with coordinates, grouped by day
-    const allCoordActivities: { activity: Activity; coords: { lat: number; lng: number }; dayIndex: number }[] = [];
+    const allCoordActivities: Array<{
+      activity: Activity;
+      coords: { lat: number; lng: number };
+      dayIndex: number;
+    }> = [];
 
-    itinerary.itinerary.forEach((dayPlan, dayIdx) => {
+    itinerary.itinerary.forEach((dayPlan, dayIndex) => {
       dayPlan.activities.forEach((activity) => {
         const coords = getCoords(activity);
-        if (coords) {
-          allCoordActivities.push({ activity, coords, dayIndex: dayIdx });
-        }
+        if (!coords) return;
+        allCoordActivities.push({ activity, coords, dayIndex });
       });
     });
 
-    if (allCoordActivities.length === 0) return;
+    if (allCoordActivities.length === 0) {
+      return () => {
+        controller.abort();
+      };
+    }
 
-    // Add markers
     allCoordActivities.forEach(({ activity, coords, dayIndex }) => {
-      const color = DAY_COLORS[dayIndex % DAY_COLORS.length];
-
-      // Create marker element
-      const el = document.createElement("div");
-      el.style.width = "16px";
-      el.style.height = "16px";
-      el.style.borderRadius = "50%";
-      el.style.backgroundColor = color;
-      el.style.border = "2.5px solid #ffffff";
-      el.style.boxShadow = "0 2px 6px rgba(0,0,0,0.4)";
-      el.style.cursor = "pointer";
+      const markerElement = document.createElement("div");
+      markerElement.style.width = "16px";
+      markerElement.style.height = "16px";
+      markerElement.style.borderRadius = "50%";
+      markerElement.style.backgroundColor =
+        DAY_COLORS[dayIndex % DAY_COLORS.length];
+      markerElement.style.border = "2.5px solid #ffffff";
+      markerElement.style.boxShadow = "0 2px 6px rgba(0,0,0,0.4)";
+      markerElement.style.cursor = "pointer";
 
       const popup = new maplibregl.Popup({ offset: 12, closeButton: false })
         .setHTML(
           `<div style="font-size:13px;color:#1f2937;padding:2px 4px;">` +
-          `<strong>${activity.activity}</strong>` +
-          (activity.time ? `<br/><span style="color:#6b7280;">${activity.time}</span>` : "") +
-          `</div>`
+            `<strong>${activity.activity}</strong>` +
+            (activity.time
+              ? `<br/><span style="color:#6b7280;">${activity.time}</span>`
+              : "") +
+            `</div>`
         );
 
-      const marker = new maplibregl.Marker({ element: el })
+      const marker = new maplibregl.Marker({ element: markerElement })
         .setLngLat([coords.lng, coords.lat])
         .setPopup(popup)
         .addTo(map);
@@ -211,61 +375,56 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
       markersRef.current.push(marker);
     });
 
-    // Fit bounds to all markers
     const bounds = new maplibregl.LngLatBounds();
     allCoordActivities.forEach(({ coords }) => {
       bounds.extend([coords.lng, coords.lat]);
     });
+
     try {
       map.fitBounds(bounds, { padding: 50, duration: 500, maxZoom: 15 });
-    } catch { /* noop */ }
+    } catch {
+      // noop
+    }
 
-    // Fetch route polyline if 2+ waypoints and API key available
     if (allCoordActivities.length >= 2 && apiKey) {
       const waypoints = allCoordActivities
         .map(({ coords }) => `${coords.lat},${coords.lng}`)
         .join("|");
-
       const routeUrl = `https://api.geoapify.com/v1/routing?waypoints=${waypoints}&mode=drive&apiKey=${apiKey}`;
 
-      const controller = new AbortController();
-
       fetch(routeUrl, { signal: controller.signal })
-        .then((res) => {
-          if (!res.ok) throw new Error(`Routing API error: ${res.status}`);
-          return res.json();
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Routing API error: ${response.status}`);
+          }
+          return response.json() as Promise<GeoapifyRouteResponse>;
         })
         .then((data) => {
-          const geometry = data?.features?.[0]?.geometry;
-          if (!geometry) return;
+          const geometry = data.features?.[0]?.geometry;
+          if (!geometry || !mapRef.current) return;
 
-          // Flatten coordinates (may be MultiLineString)
-          let lineCoords: number[][] = [];
-          if (geometry.type === "LineString") {
-            lineCoords = geometry.coordinates;
-          } else if (geometry.type === "MultiLineString") {
-            lineCoords = geometry.coordinates.flat();
-          }
+          const lineCoords =
+            geometry.type === "LineString"
+              ? geometry.coordinates
+              : geometry.coordinates.flat();
 
           if (lineCoords.length === 0) return;
 
-          // Check map is still alive
-          if (!mapRef.current) return;
-
-          const geojson = {
-            type: "FeatureCollection" as const,
+          const geojson: MapLibreGeoJsonFeatureCollection = {
+            type: "FeatureCollection",
             features: [
               {
-                type: "Feature" as const,
-                geometry: { type: "LineString" as const, coordinates: lineCoords },
+                type: "Feature",
+                geometry: {
+                  type: "LineString",
+                  coordinates: lineCoords,
+                },
                 properties: {},
               },
             ],
           };
 
           map.addSource("trip-route", { type: "geojson", data: geojson });
-
-          // Outline layer for contrast
           map.addLayer({
             id: "trip-route-outline",
             type: "line",
@@ -279,7 +438,6 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
           });
           routeLayerIds.current.push("trip-route-outline");
 
-          // Main route line
           map.addLayer({
             id: "trip-route-line",
             type: "line",
@@ -293,53 +451,42 @@ export const TripMap: React.FC<TripMapProps> = ({ itinerary }) => {
           });
           routeLayerIds.current.push("trip-route-line");
         })
-        .catch((err) => {
-          if ((err as Error).name === "AbortError") return;
-          console.warn("TripMap: Failed to fetch route", err);
+        .catch((error: unknown) => {
+          if (error instanceof Error && error.name === "AbortError") return;
+          console.warn("TripMap: Failed to fetch route", error);
         });
-
-      // Cleanup abort on unmount or re-render
-      return () => {
-        controller.abort();
-      };
     }
-  }, [itinerary, mapReady]);
+
+    return () => {
+      controller.abort();
+    };
+  }, [apiKey, itinerary, mapReady]);
 
   if (!itinerary) {
-    return (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#1a1a2e",
-          color: "#6b7280",
-          fontSize: "14px",
-          borderRadius: "8px",
-        }}
-      >
-        No itinerary to display on map
-      </div>
+    return renderEmptyState("No itinerary to display on map", "#6b7280");
+  }
+
+  if (mapStatus === "disabled") {
+    return renderEmptyState(
+      "Map unavailable. Set NEXT_PUBLIC_GEOAPIFY_API_KEY to enable routing.",
+      "#6b7280"
     );
+  }
+
+  if (mapStatus === "error") {
+    return renderEmptyState("Map failed to load.");
   }
 
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      {loading && (
+      {mapStatus === "loading" && (
         <div
           style={{
+            ...EMPTY_STATE_STYLE,
             position: "absolute",
             inset: 0,
             zIndex: 10,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "#1a1a2e",
             color: "#9ca3af",
-            fontSize: "14px",
-            borderRadius: "8px",
           }}
         >
           Loading map...

@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useCallback, useId, useState } from "react";
 import { useVoiceAgent } from "@/hooks/useVoiceAgent";
 import { VoicePanel } from "@/ui/VoicePanel";
 import { ChatInterface } from "@/ui/ChatInterface";
@@ -8,13 +8,17 @@ import { ItineraryWorkspace } from "@/ui/ItineraryWorkspace";
 import { NovaActViewer } from "@/ui/NovaActViewer";
 import { TripMap } from "@/ui/TripMap";
 
+export type InteractionMode = "voice" | "text";
+
 export default function Home() {
   const sessionId = `session-${useId().replace(/:/g, "")}`;
+  const [interactionMode, setInteractionMode] = useState<InteractionMode>("voice");
 
   const {
     isConnected,
     isListening,
     isMuted,
+    micLevel,
     voiceState,
     messages,
     toolCalls,
@@ -32,20 +36,44 @@ export default function Home() {
     cancelBooking,
   } = useVoiceAgent(sessionId);
 
+  const handleModeChange = useCallback(
+    (nextMode: InteractionMode) => {
+      setInteractionMode(nextMode);
+      if (nextMode === "text") {
+        stopListening();
+        disconnect();
+      }
+    },
+    [disconnect, stopListening]
+  );
+
+  const handleConnect = useCallback(() => {
+    setInteractionMode("voice");
+    connect();
+  }, [connect]);
+
+  const handleStartListening = useCallback(() => {
+    setInteractionMode("voice");
+    startListening();
+  }, [startListening]);
+
   return (
     <div className="flex flex-col h-screen bg-gray-950">
       {/* Top voice panel */}
       <VoicePanel
+        interactionMode={interactionMode}
         isConnected={isConnected}
         isListening={isListening}
         isMuted={isMuted}
+        micLevel={micLevel}
         voiceState={voiceState}
         lodLevel={lodLevel}
-        onConnect={connect}
+        onConnect={handleConnect}
         onDisconnect={disconnect}
-        onStartListening={startListening}
+        onStartListening={handleStartListening}
         onStopListening={stopListening}
         onSetLod={setLod}
+        onSetInteractionMode={handleModeChange}
         onToggleMute={toggleMute}
       />
 
@@ -61,6 +89,7 @@ export default function Home() {
         {/* Left: Chat — always available (text fallback via REST when disconnected) */}
         <div className="w-1/3 min-w-[320px] border-r border-gray-700">
           <ChatInterface
+            interactionMode={interactionMode}
             messages={messages}
             toolCalls={toolCalls}
             onSendText={sendText}

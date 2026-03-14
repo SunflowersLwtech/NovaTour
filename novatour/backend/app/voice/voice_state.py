@@ -111,6 +111,9 @@ class VoiceStateMachine:
             )
             return self._current_state
 
+        if target == self._current_state:
+            return self._current_state
+
         if not self.can_transition_to(target):
             valid_next = self.VALID_TRANSITIONS.get(self._current_state, [])
             logger.warning(

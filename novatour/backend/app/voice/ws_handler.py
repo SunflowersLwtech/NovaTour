@@ -27,6 +27,16 @@ router = APIRouter()
 
 # Active sessions for cleanup
 _active_sessions: Dict[str, Any] = {}
+_VOICE_IDLE_RESET_SECONDS = 45.0
+
+
+def _is_voice_idle_timeout(exc: BaseException) -> bool:
+    """Detect provider idle timeout so we can transparently reset the session."""
+    message = str(exc).lower()
+    return (
+        "timed out waiting for audio bytes" in message
+        or "interactive content" in message
+    )
 
 
 def _convert_bidi_event(event: Any) -> Optional[Dict[str, Any]]:
@@ -70,20 +80,40 @@ def _convert_bidi_event(event: Any) -> Optional[Dict[str, Any]]:
                 "is_final": getattr(event, "is_final", False),
             }
 
-    # Tool use events
-    if event_type in ("ToolUseStreamEvent", "ToolResultStreamEvent") or hasattr(
-        event, "tool_name"
-    ):
+    # Tool use start
+    if event_type == "ToolUseStreamEvent":
+        tool_use = event.get("current_tool_use", {}) if isinstance(event, dict) else {}
         return {
             "type": "tool_call",
-            "name": getattr(event, "tool_name", getattr(event, "name", "unknown")),
-            "input": getattr(event, "input", {}),
-            "status": "complete"
-            if event_type == "ToolResultStreamEvent"
-            else "calling",
-            "result": str(getattr(event, "result", ""))[:500]
-            if event_type == "ToolResultStreamEvent"
-            else None,
+            "tool_use_id": tool_use.get("toolUseId"),
+            "name": tool_use.get("name", "unknown"),
+            "input": tool_use.get("input", {}),
+            "status": "calling",
+            "result": None,
+        }
+
+    # Tool execution finished
+    if event_type == "ToolResultEvent" or hasattr(event, "tool_result"):
+        tool_result = getattr(event, "tool_result", {})
+        result_content = ""
+        for block in tool_result.get("content", []):
+            if "json" in block:
+                result_content = json.dumps(block["json"])
+                break
+            if "text" in block:
+                result_content = block["text"]
+                break
+
+        if not result_content:
+            result_content = json.dumps(tool_result)
+
+        return {
+            "type": "tool_call",
+            "tool_use_id": tool_result.get("toolUseId"),
+            "name": None,
+            "input": None,
+            "status": "complete",
+            "result": result_content,
         }
 
     # Content end / interruption
@@ -172,41 +202,89 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
     lod_state = LODState()
     voice_sm = VoiceStateMachine(session_id=session_id)
     places_cache: Dict[str, Dict] = {}  # name → {lat, lon}
+    announced_tool_calls: set[str] = set()
+    tool_uses: Dict[str, Dict[str, Any]] = {}
     last_user_text: str = ""
-    agent = create_voice_agent(session_id, lod_level=lod_state.current_lod)
-    _active_sessions[session_id] = agent
+    last_input_at: float | None = None
+    agent: Any | None = None
+    agent_ready = asyncio.Event()
+    agent_lock = asyncio.Lock()
 
-    try:
-        # Start agent with retry — if BidiAgent fails, retry once before MockAgent fallback
+    async def _stop_agent(current_agent: Any | None) -> None:
+        """Stop an agent instance without failing the session cleanup path."""
+        if current_agent is None:
+            return
         try:
-            await agent.start()
-        except Exception as start_err:
-            logger.warning(
-                f"BidiAgent start failed: {start_err}, retrying once..."
-            )
+            await asyncio.wait_for(current_agent.stop(), timeout=5.0)
+        except asyncio.CancelledError:
+            logger.info(f"agent.stop() cancelled during cleanup for session={session_id}")
+        except asyncio.TimeoutError:
+            logger.warning(f"agent.stop() timed out for session={session_id}, forcing cleanup")
+        except Exception:
+            pass
+        finally:
+            if _active_sessions.get(session_id) is current_agent:
+                _active_sessions.pop(session_id, None)
+
+    async def _reset_agent() -> None:
+        """Clear the current voice session so the next input can restart it cleanly."""
+        nonlocal agent
+        current_agent = agent
+        agent = None
+        agent_ready.clear()
+        await _stop_agent(current_agent)
+
+    async def _ensure_agent_started() -> None:
+        """Lazily create and start the voice agent on the first real user input."""
+        nonlocal agent
+        if agent_ready.is_set():
+            return
+
+        async with agent_lock:
+            if agent_ready.is_set():
+                return
+
+            candidate = create_voice_agent(session_id, lod_level=lod_state.current_lod)
+            agent = candidate
+            _active_sessions[session_id] = candidate
+
             try:
-                await agent.stop()
-            except Exception:
-                pass
-            agent = create_voice_agent(session_id, lod_level=lod_state.current_lod)
-            _active_sessions[session_id] = agent
+                await candidate.start()
+                agent_ready.set()
+                return
+            except Exception as start_err:
+                logger.warning(
+                    f"BidiAgent start failed: {start_err}, retrying once..."
+                )
+                await _stop_agent(candidate)
+
+            retry_candidate = create_voice_agent(session_id, lod_level=lod_state.current_lod)
+            agent = retry_candidate
+            _active_sessions[session_id] = retry_candidate
+
             try:
-                await agent.start()
+                await retry_candidate.start()
+                agent_ready.set()
+                return
             except Exception as retry_err:
                 logger.warning(
                     f"BidiAgent retry failed: {retry_err}, falling back to MockAgent"
                 )
-                agent = MockAgent(
+                await _stop_agent(retry_candidate)
+                fallback_agent = MockAgent(
                     session_id=session_id,
                     system_prompt=build_system_prompt(lod_level=lod_state.current_lod),
                 )
-                _active_sessions[session_id] = agent
-                await agent.start()
+                agent = fallback_agent
+                _active_sessions[session_id] = fallback_agent
+                await fallback_agent.start()
+                agent_ready.set()
                 await websocket.send_json({
                     "type": "error",
                     "message": f"Voice model unavailable ({retry_err}), switched to text mode.",
                 })
 
+    try:
         async def _handle_lod_change(old_lod: int, new_lod: int) -> None:
             """Send LOD change notification with transition phrase."""
             phrase = get_lod_transition_phrase(old_lod, new_lod)
@@ -223,7 +301,7 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
 
         async def forward_to_agent():
             """Forward client messages to the BidiAgent."""
-            nonlocal agent, last_user_text
+            nonlocal last_input_at, last_user_text
             while True:
                 try:
                     raw = await websocket.receive_text()
@@ -231,6 +309,17 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
                     msg_type = data.get("type", "")
 
                     if msg_type == "audio":
+                        if (
+                            last_input_at is not None
+                            and time.monotonic() - last_input_at > _VOICE_IDLE_RESET_SECONDS
+                        ):
+                            logger.info(
+                                f"Resetting idle voice session before audio: session={session_id}"
+                            )
+                            await _reset_agent()
+                        await _ensure_agent_started()
+                        last_input_at = time.monotonic()
+
                         # Forward audio to agent
                         if isinstance(agent, MockAgent):
                             await agent.send(data["data"])
@@ -251,6 +340,16 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
                     elif msg_type == "text":
                         text = data.get("text", "")
                         if text:
+                            if (
+                                last_input_at is not None
+                                and time.monotonic() - last_input_at > _VOICE_IDLE_RESET_SECONDS
+                            ):
+                                logger.info(
+                                    f"Resetting idle voice session before text input: session={session_id}"
+                                )
+                                await _reset_agent()
+                            await _ensure_agent_started()
+                            last_input_at = time.monotonic()
                             last_user_text = text
 
                             # Check for LOD change intent
@@ -286,113 +385,153 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
         async def forward_to_client():
             """Forward BidiAgent events to the client."""
             nonlocal agent
-            try:
-                async for event in agent.receive():
-                    ws_event = _convert_bidi_event(event)
-                    if ws_event:
-                        evt_type = ws_event.get("type")
+            while True:
+                await agent_ready.wait()
+                current_agent = agent
+                if current_agent is None:
+                    continue
 
-                        # Track voice state transitions
-                        if evt_type == "audio":
-                            old = voice_sm.state
-                            voice_sm.on_audio_chunk()
-                            if voice_sm.state != old:
+                try:
+                    async for event in current_agent.receive():
+                        ws_event = _convert_bidi_event(event)
+                        if ws_event:
+                            evt_type = ws_event.get("type")
+                            tool_use_id = ws_event.get("tool_use_id")
+
+                            if evt_type == "tool_call" and tool_use_id:
+                                if ws_event.get("status") == "calling":
+                                    tool_uses[tool_use_id] = {
+                                        "name": ws_event.get("name", "unknown"),
+                                        "input": ws_event.get("input", {}),
+                                    }
+                                elif ws_event.get("status") == "complete":
+                                    tool_meta = tool_uses.get(tool_use_id, {})
+                                    if not ws_event.get("name"):
+                                        ws_event["name"] = tool_meta.get("name", "unknown")
+                                    if ws_event.get("input") is None:
+                                        ws_event["input"] = tool_meta.get("input", {})
+
+                            if (
+                                evt_type == "tool_call"
+                                and ws_event.get("status") == "calling"
+                                and ws_event.get("name") == "plan_itinerary"
+                                and tool_use_id
+                                and tool_use_id not in announced_tool_calls
+                            ):
+                                announced_tool_calls.add(tool_use_id)
+                                destination = ws_event.get("input", {}).get("destination", "your trip")
+                                await websocket.send_json({
+                                    "type": "transcript",
+                                    "text": f"I'm planning your itinerary for {destination} now.",
+                                    "role": "assistant",
+                                    "is_final": True,
+                                })
+
+                            # Track voice state transitions
+                            if evt_type == "audio":
+                                old = voice_sm.state
+                                voice_sm.on_audio_chunk()
+                                if voice_sm.state != old:
+                                    await websocket.send_json(
+                                        {"type": "voice_state", "state": voice_sm.state.value}
+                                    )
+
+                            # Handle interruption — classify intent
+                            if evt_type == "interruption":
+                                voice_sm.on_interruption()
+                                await websocket.send_json(
+                                    {"type": "voice_state", "state": voice_sm.state.value}
+                                )
+                                # Classify intent if we have recent user text
+                                if last_user_text:
+                                    intent = rule_based_intent_classification(last_user_text)
+                                    if intent == IntentType.LOD_CHANGE:
+                                        old_lod = lod_state.current_lod
+                                        new_lod = detect_lod_change(last_user_text, old_lod)
+                                        if new_lod != old_lod:
+                                            lod_state.current_lod = new_lod
+                                            lod_state.increment_sequence()
+                                            await _handle_lod_change(old_lod, new_lod)
+
+                            # Intercept search_places results → populate cache
+                            if (
+                                evt_type == "tool_call"
+                                and ws_event.get("name") == "search_places"
+                                and ws_event.get("status") == "complete"
+                            ):
+                                try:
+                                    result_str = ws_event.get("result", "{}")
+                                    result_data = json.loads(result_str)
+                                    for place in result_data.get("places", []):
+                                        name = place.get("name", "")
+                                        lat = place.get("latitude") or place.get("lat")
+                                        lon = place.get("longitude") or place.get("lon") or place.get("lng")
+                                        if name and lat and lon:
+                                            entry = {"lat": float(lat), "lon": float(lon)}
+                                            photo = place.get("photo_url", "")
+                                            if photo:
+                                                entry["photo_url"] = photo
+                                            places_cache[name] = entry
+                                except (json.JSONDecodeError, TypeError, ValueError):
+                                    pass
+
+                            # Intercept itinerary data from tool results
+                            if (
+                                evt_type == "tool_call"
+                                and ws_event.get("name") == "plan_itinerary"
+                                and ws_event.get("status") == "complete"
+                            ):
+                                try:
+                                    result = json.loads(ws_event.get("result", "{}"))
+                                    if "itinerary" in result:
+                                        # Enrich with cached coordinates
+                                        result = _enrich_itinerary_coords(result, places_cache)
+                                        await websocket.send_json(
+                                            {"type": "itinerary", "data": result}
+                                        )
+                                except (json.JSONDecodeError, TypeError):
+                                    pass
+
+                                # Mark response complete
+                                voice_sm.on_response_complete()
                                 await websocket.send_json(
                                     {"type": "voice_state", "state": voice_sm.state.value}
                                 )
 
-                        # Handle interruption — classify intent
-                        if evt_type == "interruption":
-                            voice_sm.on_interruption()
-                            await websocket.send_json(
-                                {"type": "voice_state", "state": voice_sm.state.value}
-                            )
-                            # Classify intent if we have recent user text
-                            if last_user_text:
-                                intent = rule_based_intent_classification(last_user_text)
-                                if intent == IntentType.LOD_CHANGE:
-                                    old_lod = lod_state.current_lod
-                                    new_lod = detect_lod_change(last_user_text, old_lod)
-                                    if new_lod != old_lod:
-                                        lod_state.current_lod = new_lod
-                                        lod_state.increment_sequence()
-                                        await _handle_lod_change(old_lod, new_lod)
-
-                        # Intercept search_places results → populate cache
-                        if (
-                            evt_type == "tool_call"
-                            and ws_event.get("name") == "search_places"
-                            and ws_event.get("status") == "complete"
-                        ):
-                            try:
-                                result_str = ws_event.get("result", "{}")
-                                result_data = json.loads(result_str)
-                                for place in result_data.get("places", []):
-                                    name = place.get("name", "")
-                                    lat = place.get("latitude") or place.get("lat")
-                                    lon = place.get("longitude") or place.get("lon") or place.get("lng")
-                                    if name and lat and lon:
-                                        entry = {"lat": float(lat), "lon": float(lon)}
-                                        photo = place.get("photo_url", "")
-                                        if photo:
-                                            entry["photo_url"] = photo
-                                        places_cache[name] = entry
-                            except (json.JSONDecodeError, TypeError, ValueError):
-                                pass
-
-                        # Intercept itinerary data from tool results
-                        if (
-                            evt_type == "tool_call"
-                            and ws_event.get("name") == "plan_itinerary"
-                            and ws_event.get("status") == "complete"
-                        ):
-                            try:
-                                result = json.loads(ws_event.get("result", "{}"))
-                                if "itinerary" in result:
-                                    # Enrich with cached coordinates
-                                    result = _enrich_itinerary_coords(result, places_cache)
-                                    await websocket.send_json(
-                                        {"type": "itinerary", "data": result}
-                                    )
-                            except (json.JSONDecodeError, TypeError):
-                                pass
-
-                            # Mark response complete
-                            voice_sm.on_response_complete()
-                            await websocket.send_json(
-                                {"type": "voice_state", "state": voice_sm.state.value}
-                            )
-
-                        await websocket.send_json(ws_event)
-            except Exception as e:
-                if is_recoverable(e):
-                    logger.warning(
-                        f"Recoverable error for session={session_id}: {e}, "
-                        "falling back to MockAgent"
-                    )
-                    # Fall back to MockAgent and notify client
-                    try:
-                        await agent.stop()
-                    except Exception:
-                        pass
-                    agent = MockAgent(
-                        session_id=session_id,
-                        system_prompt=build_system_prompt(lod_level=lod_state.current_lod),
-                    )
-                    _active_sessions[session_id] = agent
-                    await agent.start()
-                    await websocket.send_json({
-                        "type": "error",
-                        "message": f"Voice model unavailable ({e}), switched to text mode.",
-                    })
-                    # Continue receiving from MockAgent
-                    async for event in agent.receive():
-                        ws_event = _convert_bidi_event(event)
-                        if ws_event:
                             await websocket.send_json(ws_event)
-                else:
+                except Exception as e:
+                    if _is_voice_idle_timeout(e):
+                        logger.info(
+                            f"Voice provider idle timeout; resetting session={session_id}"
+                        )
+                        await _reset_agent()
+                        continue
+
+                    if is_recoverable(e):
+                        logger.warning(
+                            f"Recoverable error for session={session_id}: {e}, "
+                            "falling back to MockAgent"
+                        )
+                        await _stop_agent(current_agent)
+                        fallback_agent = MockAgent(
+                            session_id=session_id,
+                            system_prompt=build_system_prompt(lod_level=lod_state.current_lod),
+                        )
+                        agent = fallback_agent
+                        _active_sessions[session_id] = fallback_agent
+                        await fallback_agent.start()
+                        agent_ready.set()
+                        await websocket.send_json({
+                            "type": "error",
+                            "message": f"Voice model unavailable ({e}), switched to text mode.",
+                        })
+                        continue
+
                     logger.error(f"Non-recoverable error for session={session_id}: {e}")
                     raise
+
+                if current_agent is agent:
+                    await _reset_agent()
 
         # Run both directions concurrently; cancel remaining if one finishes
         tasks = [
@@ -418,12 +557,6 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
     finally:
         # Cleanup — timeout-protected to prevent indefinite hang
         # (SDK's stop_all() awaits network I/O without timeout)
-        try:
-            await asyncio.wait_for(agent.stop(), timeout=5.0)
-        except asyncio.TimeoutError:
-            logger.warning(f"agent.stop() timed out for session={session_id}, forcing cleanup")
-        except Exception:
-            pass
-        _active_sessions.pop(session_id, None)
+        await _stop_agent(agent)
         elapsed = time.time() - session_start
         logger.info(f"Session ended: {session_id} (duration={elapsed:.1f}s)")

@@ -1,10 +1,13 @@
 "use client";
 
+import Image, { type ImageLoaderProps } from "next/image";
 import type { ItineraryData } from "@/types/voice";
 
 interface ItineraryWorkspaceProps {
   itinerary: ItineraryData | null;
 }
+
+const passthroughImageLoader = ({ src }: ImageLoaderProps) => src;
 
 export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
   if (!itinerary) {
@@ -58,13 +61,17 @@ export function ItineraryWorkspace({ itinerary }: ItineraryWorkspaceProps) {
                     {act.time}
                   </span>
                   {act.photo_url && (
-                    <img
+                    <Image
+                      loader={passthroughImageLoader}
                       src={act.photo_url}
                       alt={act.activity}
+                      width={56}
+                      height={56}
                       className="w-14 h-14 rounded object-cover flex-shrink-0"
                       loading="lazy"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
+                      unoptimized
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
                       }}
                     />
                   )}

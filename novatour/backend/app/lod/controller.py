@@ -85,11 +85,7 @@ EXPLICIT_DOWN_PATTERNS: List[_Pattern] = [
     _Pattern("shorter", "down", SignalType.EXPLICIT, 0.90),
     _Pattern("tl;dr", "down", SignalType.EXPLICIT, 0.90),
     _Pattern("tldr", "down", SignalType.EXPLICIT, 0.90),
-    # Simple command words
-    _Pattern("fast", "down", SignalType.EXPLICIT, 0.90),
     _Pattern("speed up", "down", SignalType.EXPLICIT, 0.85),
-    _Pattern("faster", "down", SignalType.EXPLICIT, 0.85),
-    _Pattern("quick", "down", SignalType.EXPLICIT, 0.85),
 ]
 
 EXPLICIT_UP_PATTERNS: List[_Pattern] = [
@@ -116,9 +112,7 @@ EXPLICIT_UP_PATTERNS: List[_Pattern] = [
     _Pattern("in depth", "up", SignalType.EXPLICIT, 0.85),
     _Pattern("immersive", "up", SignalType.EXPLICIT, 0.85),
     _Pattern("podcast mode", "up", SignalType.EXPLICIT, 0.85),
-    # Simple command words
     _Pattern("slow down", "up", SignalType.EXPLICIT, 0.90),
-    _Pattern("slow", "up", SignalType.EXPLICIT, 0.85),
     _Pattern("deeper", "up", SignalType.EXPLICIT, 0.85),
 ]
 
@@ -138,9 +132,6 @@ IMPLICIT_DOWN_PATTERNS: List[_Pattern] = [
     _Pattern("hurry up", "down", SignalType.IMPLICIT, 0.75),
     _Pattern("skip to", "down", SignalType.IMPLICIT, 0.80),
     _Pattern("bottom line", "down", SignalType.IMPLICIT, 0.80),
-    # Simple command words
-    _Pattern("quickly", "down", SignalType.IMPLICIT, 0.80),
-    _Pattern("quicker", "down", SignalType.IMPLICIT, 0.75),
 ]
 
 IMPLICIT_UP_PATTERNS: List[_Pattern] = [
@@ -155,15 +146,10 @@ IMPLICIT_UP_PATTERNS: List[_Pattern] = [
     _Pattern("展开讲", "up", SignalType.IMPLICIT, 0.80),
     _Pattern("继续说", "up", SignalType.IMPLICIT, 0.75),
     # English
-    _Pattern("why", "up", SignalType.IMPLICIT, 0.70),
-    _Pattern("how", "up", SignalType.IMPLICIT, 0.65),
     _Pattern("interesting", "up", SignalType.IMPLICIT, 0.75),
     _Pattern("go on", "up", SignalType.IMPLICIT, 0.75),
     _Pattern("and then", "up", SignalType.IMPLICIT, 0.70),
     _Pattern("what else", "up", SignalType.IMPLICIT, 0.75),
-    _Pattern("more", "up", SignalType.IMPLICIT, 0.70),
-    # Simple command words
-    _Pattern("details", "up", SignalType.IMPLICIT, 0.80),
     _Pattern("narrative", "up", SignalType.IMPLICIT, 0.70),
     _Pattern("narrate", "up", SignalType.IMPLICIT, 0.70),
 ]

@@ -2,17 +2,38 @@
 
 import type { VoiceStateValue } from "@/hooks/useVoiceAgent";
 
-const VOICE_STATE_DISPLAY: Record<VoiceStateValue, { label: string; color: string }> = {
-  idle: { label: "Ready", color: "text-gray-400" },
-  responding: { label: "Speaking...", color: "text-green-400" },
-  interrupted: { label: "Interrupted", color: "text-yellow-400" },
-  finished: { label: "Done", color: "text-blue-400" },
+const VOICE_STATE_DISPLAY: Record<
+  VoiceStateValue,
+  { label: string; color: string; description: string }
+> = {
+  idle: {
+    label: "Ready",
+    color: "text-slate-300",
+    description: "Voice session is connected and waiting for you.",
+  },
+  responding: {
+    label: "Speaking",
+    color: "text-emerald-300",
+    description: "NovaTour is actively speaking back to you.",
+  },
+  interrupted: {
+    label: "Interrupted",
+    color: "text-amber-300",
+    description: "The previous response was interrupted.",
+  },
+  finished: {
+    label: "Done",
+    color: "text-sky-300",
+    description: "The latest voice response has finished.",
+  },
 };
 
 interface VoicePanelProps {
+  interactionMode: "voice" | "text";
   isConnected: boolean;
   isListening: boolean;
   isMuted: boolean;
+  micLevel: number;
   voiceState: VoiceStateValue;
   lodLevel: number;
   onConnect: () => void;
@@ -20,13 +41,53 @@ interface VoicePanelProps {
   onStartListening: () => void;
   onStopListening: () => void;
   onSetLod: (level: number) => void;
+  onSetInteractionMode: (mode: "voice" | "text") => void;
   onToggleMute: () => void;
 }
 
+function AudioMeter({
+  level,
+  isActive,
+  isMuted,
+}: {
+  level: number;
+  isActive: boolean;
+  isMuted: boolean;
+}) {
+  const barCount = 12;
+  const activeBars = isActive ? Math.max(1, Math.round(level * barCount)) : 0;
+
+  return (
+    <div
+      aria-hidden="true"
+      className="flex h-10 items-end gap-1 rounded-xl border border-slate-800 bg-slate-950/80 px-3 py-2"
+    >
+      {Array.from({ length: barCount }).map((_, index) => {
+        const isLit = index < activeBars;
+        return (
+          <div
+            key={index}
+            className={`w-1.5 rounded-full transition-all ${
+              isLit
+                ? isMuted
+                  ? "bg-amber-400"
+                  : "bg-cyan-400"
+                : "bg-slate-800"
+            }`}
+            style={{ height: `${30 + ((index % 4) + 1) * 10}%` }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export function VoicePanel({
+  interactionMode,
   isConnected,
   isListening,
   isMuted,
+  micLevel,
   voiceState,
   lodLevel,
   onConnect,
@@ -34,108 +95,220 @@ export function VoicePanel({
   onStartListening,
   onStopListening,
   onSetLod,
+  onSetInteractionMode,
   onToggleMute,
 }: VoicePanelProps) {
-  // Determine status text with priority: muted > voiceState > listening > connection
-  const statusInfo = isMuted
-    ? { label: "Muted", color: "text-yellow-400" }
-    : isListening && voiceState !== "idle"
-    ? VOICE_STATE_DISPLAY[voiceState]
+  const voiceEnabled = interactionMode === "voice";
+  const statusInfo = !voiceEnabled
+    ? {
+        label: "Text mode",
+        color: "text-slate-400",
+        description: "Voice controls are paused until you switch back to voice mode.",
+      }
+    : isMuted
+    ? {
+        label: "Mic muted",
+        color: "text-amber-300",
+        description: "Microphone capture is running, but audio is not being sent.",
+      }
     : isListening
-    ? { label: "Listening...", color: "text-green-400" }
+    ? VOICE_STATE_DISPLAY[voiceState === "idle" ? "idle" : voiceState]
     : isConnected
-    ? { label: "Ready", color: "text-gray-400" }
-    : { label: "Disconnected", color: "text-gray-500" };
+    ? {
+        label: "Mic off",
+        color: "text-slate-300",
+        description: "Voice session is connected. Open the microphone when you want to speak.",
+      }
+    : {
+        label: "Disconnected",
+        color: "text-slate-500",
+        description: "Voice mode is available, but the live session is not connected yet.",
+      };
 
   return (
-    <div className="flex items-center gap-4 px-6 py-3 bg-gray-900 border-b border-gray-700">
-      {/* Logo */}
-      <h1 className="text-xl font-bold text-white mr-4">
-        Nova<span className="text-blue-400">Tour</span>
-      </h1>
+    <header className="border-b border-slate-800 bg-slate-950">
+      <div className="flex flex-col gap-4 px-4 py-4 lg:px-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl font-bold text-white">
+                Nova<span className="text-cyan-400">Tour</span>
+              </h1>
+              <span className="rounded-full border border-slate-800 bg-slate-900 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                Live travel copilot
+              </span>
+            </div>
+            <p className="max-w-2xl text-sm text-slate-400">
+              Choose how users interact first. Voice mode keeps the microphone workflow visible.
+              Text mode removes that pressure and keeps the UI chat-first.
+            </p>
+          </div>
 
-      {/* Connection */}
-      <button
-        onClick={isConnected ? onDisconnect : onConnect}
-        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-          isConnected
-            ? "bg-green-600 hover:bg-green-700 text-white"
-            : "bg-gray-600 hover:bg-gray-500 text-white"
-        }`}
-      >
-        {isConnected ? "Connected" : "Connect"}
-      </button>
-
-      {/* Mic Button */}
-      <button
-        onClick={isListening ? onStopListening : onStartListening}
-        disabled={!isConnected}
-        className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-          isListening
-            ? "bg-red-500 hover:bg-red-600 animate-pulse shadow-lg shadow-red-500/50"
-            : isConnected
-            ? "bg-blue-500 hover:bg-blue-600"
-            : "bg-gray-600 cursor-not-allowed"
-        }`}
-      >
-        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-          {isListening ? (
-            <rect x="6" y="6" width="12" height="12" rx="2" />
-          ) : (
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1 1.93c-3.94-.49-7-3.85-7-7.93h2c0 3.31 2.69 6 6 6s6-2.69 6-6h2c0 4.08-3.06 7.44-7 7.93V20h4v2H8v-2h4v-4.07z" />
-          )}
-        </svg>
-      </button>
-
-      {/* Mute Button */}
-      <button
-        onClick={onToggleMute}
-        disabled={!isListening}
-        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-          !isListening
-            ? "bg-gray-700 cursor-not-allowed opacity-50"
-            : isMuted
-            ? "bg-yellow-600 hover:bg-yellow-700"
-            : "bg-gray-600 hover:bg-gray-500"
-        }`}
-        title={isMuted ? "Unmute" : "Mute"}
-      >
-        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
-          {isMuted ? (
-            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-          ) : (
-            <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-          )}
-        </svg>
-      </button>
-
-      {/* Voice State Indicator */}
-      <div className="flex items-center gap-2">
-        {voiceState === "responding" && (
-          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-        )}
-        <span className={`text-sm ${statusInfo.color}`}>
-          {statusInfo.label}
-        </span>
-      </div>
-
-      {/* LOD Controls */}
-      <div className="ml-auto flex items-center gap-2">
-        <span className="text-xs text-gray-500">Detail:</span>
-        {[1, 2, 3].map((level) => (
-          <button
-            key={level}
-            onClick={() => onSetLod(level)}
-            className={`w-8 h-8 rounded text-xs font-bold transition-colors ${
-              lodLevel === level
-                ? "bg-blue-500 text-white"
-                : "bg-gray-700 text-gray-400 hover:bg-gray-600"
-            }`}
+          <div
+            className="inline-flex w-full rounded-2xl border border-slate-800 bg-slate-900 p-1 lg:w-auto"
+            role="tablist"
+            aria-label="Interaction mode"
           >
-            {level}
-          </button>
-        ))}
+            {(["voice", "text"] as const).map((mode) => {
+              const selected = interactionMode === mode;
+              return (
+                <button
+                  key={mode}
+                  type="button"
+                  role="tab"
+                  aria-selected={selected}
+                  onClick={() => onSetInteractionMode(mode)}
+                  className={`flex-1 rounded-xl px-4 py-2.5 text-sm font-medium transition lg:flex-none ${
+                    selected
+                      ? "bg-cyan-500 text-slate-950"
+                      : "text-slate-300 hover:bg-slate-800"
+                  }`}
+                >
+                  {mode === "voice" ? "Voice Mode" : "Text Mode"}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-[1fr,1.4fr,auto]">
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                  Session
+                </p>
+                <div className="mt-2 flex items-center gap-2">
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      isConnected && voiceEnabled ? "bg-emerald-400" : "bg-slate-600"
+                    }`}
+                    aria-hidden="true"
+                  />
+                  <p className="text-sm font-medium text-white">
+                    {voiceEnabled
+                      ? isConnected
+                        ? "Voice connected"
+                        : "Voice disconnected"
+                      : "Text-first mode"}
+                  </p>
+                </div>
+                <p className="mt-2 text-sm text-slate-400">
+                  {voiceEnabled
+                    ? "Connect the live voice session before opening the microphone."
+                    : "Text mode keeps voice disconnected until the user explicitly switches back."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={isConnected ? onDisconnect : onConnect}
+                disabled={!voiceEnabled}
+                className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                  !voiceEnabled
+                    ? "cursor-not-allowed bg-slate-800 text-slate-500"
+                    : isConnected
+                    ? "bg-emerald-500 text-slate-950 hover:bg-emerald-400"
+                    : "bg-slate-100 text-slate-950 hover:bg-white"
+                }`}
+              >
+                {isConnected ? "Disconnect voice" : "Connect voice"}
+              </button>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                    Microphone
+                  </p>
+                  <p className={`mt-2 text-sm font-medium ${statusInfo.color}`} aria-live="polite">
+                    {statusInfo.label}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-400">{statusInfo.description}</p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={isListening ? onStopListening : onStartListening}
+                    disabled={!voiceEnabled || !isConnected}
+                    aria-pressed={isListening}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                      !voiceEnabled || !isConnected
+                        ? "cursor-not-allowed bg-slate-800 text-slate-500"
+                        : isListening
+                        ? "bg-rose-500 text-white hover:bg-rose-400"
+                        : "bg-cyan-500 text-slate-950 hover:bg-cyan-400"
+                    }`}
+                  >
+                    {isListening ? "Close mic" : "Open mic"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onToggleMute}
+                    disabled={!voiceEnabled || !isListening}
+                    aria-pressed={isMuted}
+                    className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                      !voiceEnabled || !isListening
+                        ? "cursor-not-allowed bg-slate-800 text-slate-500"
+                        : isMuted
+                        ? "bg-amber-500 text-slate-950 hover:bg-amber-400"
+                        : "bg-slate-800 text-slate-200 hover:bg-slate-700"
+                    }`}
+                  >
+                    {isMuted ? "Unmute mic" : "Mute mic"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[auto,1fr] md:items-center">
+                <AudioMeter level={micLevel} isActive={voiceEnabled && isListening} isMuted={isMuted} />
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                    Input level
+                  </p>
+                  <p className="mt-1 text-sm text-slate-300">
+                    {voiceEnabled && isListening
+                      ? isMuted
+                        ? "Microphone is open but muted."
+                        : "Live microphone activity is visible here."
+                      : "Open the microphone to see live input energy."}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+              Detail
+            </p>
+            <div className="mt-3 flex gap-2">
+              {[1, 2, 3].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => onSetLod(level)}
+                  className={`h-10 w-10 rounded-xl text-sm font-semibold transition ${
+                    lodLevel === level
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                  }`}
+                  aria-pressed={lodLevel === level}
+                  aria-label={`Set detail level ${level}`}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 max-w-48 text-sm text-slate-400">
+              Keep responses brief at level 1 and more narrative at level 3.
+            </p>
+          </section>
+        </div>
       </div>
-    </div>
+    </header>
   );
 }

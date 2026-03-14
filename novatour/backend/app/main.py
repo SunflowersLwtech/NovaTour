@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,12 +12,10 @@ from app.chat.text_handler import router as chat_router
 
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="NovaTour API")
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
+@asynccontextmanager
+async def lifespan(_: FastAPI):
     """Gracefully close all active voice sessions on server shutdown."""
+    yield
     if not _active_sessions:
         return
     logger.info(f"Shutting down {len(_active_sessions)} active session(s)...")
@@ -29,6 +28,9 @@ async def shutdown_event():
         except Exception as e:
             logger.error(f"Error closing session {session_id}: {e}")
     _active_sessions.clear()
+
+
+app = FastAPI(title="NovaTour API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

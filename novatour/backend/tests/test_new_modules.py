@@ -136,7 +136,7 @@ class TestIntentClassification:
             assert intent == IntentType.STOP, f"Failed for: {phrase}"
 
     def test_lod_change_down_intent(self):
-        for phrase in ["keep it short", "summarize", "be brief", "fast", "简单说"]:
+        for phrase in ["keep it short", "summarize", "be brief", "make it quick", "简单说"]:
             intent = rule_based_intent_classification(phrase)
             assert intent == IntentType.LOD_CHANGE, f"Failed for: {phrase}"
 
@@ -150,6 +150,7 @@ class TestIntentClassification:
             "What's the weather in Tokyo?",
             "Find me a hotel",
             "I want to visit Paris",
+            "Tell me one quick travel tip for Bangkok.",
         ]:
             intent = rule_based_intent_classification(phrase)
             assert intent == IntentType.NORMAL_QA, f"Failed for: {phrase}"

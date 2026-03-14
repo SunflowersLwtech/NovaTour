@@ -75,6 +75,7 @@ def test_no_change_detection():
     assert detect_lod_change("what is the weather", 2) == 2
     assert detect_lod_change("search for flights to Tokyo", 1) == 1
     assert detect_lod_change("plan my trip", 3) == 3
+    assert detect_lod_change("Tell me one quick travel tip for Bangkok.", 2) == 2
 
 
 def test_lod_boundaries():

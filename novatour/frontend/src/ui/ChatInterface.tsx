@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ToolCallInfo, TranscriptMessage } from "@/types/voice";
 
 interface ChatInterfaceProps {
+  interactionMode: "voice" | "text";
   messages: TranscriptMessage[];
   toolCalls: ToolCallInfo[];
   onSendText: (text: string) => void;
@@ -11,6 +12,7 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({
+  interactionMode,
   messages,
   toolCalls,
   onSendText,
@@ -34,16 +36,35 @@ export function ChatInterface({
     <div className="flex flex-col h-full bg-gray-900">
       {/* Header */}
       <div className="px-4 py-3 border-b border-gray-700">
-        <h2 className="text-sm font-semibold text-gray-300">Chat</h2>
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-gray-300">Chat</h2>
+          <span
+            className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] ${
+              interactionMode === "voice"
+                ? "bg-cyan-500/15 text-cyan-300"
+                : "bg-slate-800 text-slate-300"
+            }`}
+          >
+            {interactionMode === "voice" ? "Voice assisted" : "Text first"}
+          </span>
+        </div>
       </div>
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 && (
           <div className="text-center text-gray-500 text-sm mt-8">
-            <p>Connect and start speaking, or type a message below.</p>
+            <p>
+              {interactionMode === "voice"
+                ? "Voice mode is active. You can speak, or type if that is faster."
+                : "Text mode is active. Type below, or switch back to voice when you want live audio."}
+            </p>
             <p className="text-xs mt-1 opacity-60">
-              Text chat works even without voice connection.
+              {interactionMode === "voice"
+                ? isConnected
+                  ? "The live session is connected and ready."
+                  : "Connect voice above if you want microphone input."
+                : "Text chat works without any voice connection."}
             </p>
           </div>
         )}
@@ -121,9 +142,11 @@ export function ChatInterface({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              isConnected
-                ? "Type a message (or use voice)..."
-                : "Type a message (text mode)..."
+              interactionMode === "voice"
+                ? isConnected
+                  ? "Type a message while voice mode stays active..."
+                  : "Type a message, or connect voice above..."
+                : "Type a message in text mode..."
             }
             className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-2 text-sm border border-gray-600 focus:border-blue-500 focus:outline-none"
           />

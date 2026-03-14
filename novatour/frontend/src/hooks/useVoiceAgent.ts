@@ -50,6 +50,7 @@ export function useVoiceAgent(sessionId: string) {
   const [bookingProgress, setBookingProgress] = useState<BookingProgress | null>(null);
   const [voiceState, setVoiceState] = useState<VoiceStateValue>("idle");
   const [isMuted, setIsMuted] = useState(false);
+  const [micLevel, setMicLevel] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -59,8 +60,9 @@ export function useVoiceAgent(sessionId: string) {
   const audioCtxRef = useRef<AudioContext | null>(null);
   const msgIdRef = useRef(0);
   const isMutedRef = useRef(false);
+  const lastLevelUpdateAtRef = useRef(0);
   const reconnectAttemptRef = useRef(0);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const MAX_RECONNECT = 3;
 
   const addMessage = useCallback(
@@ -92,6 +94,7 @@ export function useVoiceAgent(sessionId: string) {
     ws.onclose = (ev) => {
       setIsConnected(false);
       setIsListening(false);
+      setMicLevel(0);
       if (ev.code !== 1000 && reconnectAttemptRef.current < MAX_RECONNECT) {
         reconnectAttemptRef.current++;
         const delay = 1000 * reconnectAttemptRef.current;
@@ -105,6 +108,7 @@ export function useVoiceAgent(sessionId: string) {
     ws.onerror = () => {
       setError("WebSocket connection failed");
       setIsConnected(false);
+      setMicLevel(0);
     };
 
     ws.onmessage = (event) => {
@@ -177,7 +181,10 @@ export function useVoiceAgent(sessionId: string) {
   }, [connect]);
 
   const disconnect = useCallback(() => {
-    clearTimeout(reconnectTimeoutRef.current);
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
+    }
     reconnectAttemptRef.current = 0;
     wsRef.current?.close();
     wsRef.current = null;
@@ -214,9 +221,21 @@ export function useVoiceAgent(sessionId: string) {
 
       processor.onaudioprocess = (e) => {
         if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-        if (isMutedRef.current) return;
 
         const input = e.inputBuffer.getChannelData(0);
+        const now = performance.now();
+        if (now - lastLevelUpdateAtRef.current >= 80) {
+          let sumSquares = 0;
+          for (let i = 0; i < input.length; i++) {
+            sumSquares += input[i] * input[i];
+          }
+          const rms = Math.sqrt(sumSquares / input.length);
+          const nextLevel = isMutedRef.current ? 0 : Math.min(1, rms * 8);
+          lastLevelUpdateAtRef.current = now;
+          setMicLevel(nextLevel);
+        }
+        if (isMutedRef.current) return;
+
         // Resample from browser rate to 16kHz
         const resampled = resample(input, ctx.sampleRate, 16000);
         const pcm = float32ToInt16(resampled);
@@ -229,9 +248,11 @@ export function useVoiceAgent(sessionId: string) {
 
       source.connect(processor);
       processor.connect(ctx.destination);
+      setMicLevel(0);
       setIsListening(true);
     } catch (err) {
       setError(`Microphone access failed: ${err}`);
+      setMicLevel(0);
     }
   }, []);
 
@@ -242,6 +263,7 @@ export function useVoiceAgent(sessionId: string) {
     audioCtxRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    setMicLevel(0);
     setIsListening(false);
   }, []);
 
@@ -249,13 +271,7 @@ export function useVoiceAgent(sessionId: string) {
     (text: string) => {
       addMessage("user", text, true);
 
-      // Primary: send via WebSocket if connected
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({ type: "text", text }));
-        return;
-      }
-
-      // Fallback: send via REST /api/chat when WebSocket is not connected
+      // Text chat is more reliable through the REST fallback than the live voice socket.
       fetch(`${backendUrlsRef.current.apiUrl}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -275,6 +291,7 @@ export function useVoiceAgent(sessionId: string) {
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       isMutedRef.current = !prev;
+      if (!prev) setMicLevel(0);
       return !prev;
     });
   }, []);
@@ -291,7 +308,10 @@ export function useVoiceAgent(sessionId: string) {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      clearTimeout(reconnectTimeoutRef.current);
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
       stopListening();
       playerRef.current?.close();
       disconnect();
@@ -302,6 +322,7 @@ export function useVoiceAgent(sessionId: string) {
     isConnected,
     isListening,
     isMuted,
+    micLevel,
     voiceState,
     messages,
     toolCalls,

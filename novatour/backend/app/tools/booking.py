@@ -184,7 +184,7 @@ def confirm_booking(
             _booking_tasks.pop(task_id, None)
 
     try:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         task = loop.create_task(_run_booking())
         _booking_tasks[task_id] = task
     except RuntimeError:

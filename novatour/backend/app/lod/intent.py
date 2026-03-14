@@ -49,8 +49,7 @@ TYPE_B_LOD_UP_SIGNALS: List[str] = [
     "why", "interesting", "go on", "what else", "and then",
     "why is that", "how so", "keep going",
     "为什么", "有意思", "还有呢", "然后呢",
-    # Simple command words
-    "slow", "slow down", "more", "details", "deeper",
+    "slow down", "deeper",
 ]
 
 TYPE_B_LOD_DOWN_SIGNALS: List[str] = [
@@ -64,8 +63,7 @@ TYPE_B_LOD_DOWN_SIGNALS: List[str] = [
     "too long", "get to the point", "hurry up", "bottom line",
     "in a hurry", "don't have time",
     "太长了", "说重点", "快点", "赶时间",
-    # Simple command words
-    "fast", "quick", "speed up", "faster", "quickly", "quicker",
+    "speed up",
 ]
 
 
