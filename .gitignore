@@ -38,6 +38,8 @@ reference/
 # AI assistant local config (non-business)
 .claude/
 .playwright-mcp/
+CLAUDE.md
+AGENTS.md
 
 # Playwright artifacts (reports, screenshots, traces, videos)
 playwright-report/
