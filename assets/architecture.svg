@@ -1,0 +1,263 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720">
+  <defs>
+    <linearGradient id="bgG" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e1a"/>
+      <stop offset="100%" style="stop-color:#0f1729"/>
+    </linearGradient>
+    <linearGradient id="blueG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a5f"/>
+      <stop offset="100%" style="stop-color:#172554"/>
+    </linearGradient>
+    <linearGradient id="amberG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#78350f"/>
+      <stop offset="100%" style="stop-color:#451a03"/>
+    </linearGradient>
+    <linearGradient id="greenG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#14532d"/>
+      <stop offset="100%" style="stop-color:#052e16"/>
+    </linearGradient>
+    <linearGradient id="purpleG" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#3b0764"/>
+      <stop offset="100%" style="stop-color:#2e1065"/>
+    </linearGradient>
+    <filter id="g1"><feGaussianBlur stdDeviation="2" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+  </defs>
+
+  <rect width="1100" height="720" fill="url(#bgG)"/>
+
+  <!-- Title -->
+  <text x="550" y="35" font-family="system-ui, sans-serif" font-size="18" fill="#e2e8f0" text-anchor="middle" font-weight="700" letter-spacing="2">SYSTEM ARCHITECTURE</text>
+
+  <!-- ═══ BROWSER LAYER ═══ -->
+  <rect x="40" y="55" width="1020" height="130" rx="10" fill="url(#blueG)" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1.5"/>
+  <text x="60" y="78" font-family="system-ui, sans-serif" font-size="12" fill="#60a5fa" font-weight="700" letter-spacing="1">BROWSER — Next.js 16 + React 19 + Tailwind CSS 4</text>
+
+  <!-- Frontend components -->
+  <g transform="translate(60, 90)">
+    <rect width="140" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="70" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">VoicePanel</text>
+    <text x="70" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Mic capture</text>
+    <text x="70" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">PCM 16kHz encode</text>
+    <text x="70" y="62" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">LOD controls</text>
+  </g>
+  <g transform="translate(220, 90)">
+    <rect width="140" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="70" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">ChatInterface</text>
+    <text x="70" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Transcript display</text>
+    <text x="70" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Tool call status</text>
+    <text x="70" y="62" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Text input fallback</text>
+  </g>
+  <g transform="translate(380, 90)">
+    <rect width="160" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="80" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">ItineraryWorkspace</text>
+    <text x="80" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Day-by-day timeline</text>
+    <text x="80" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Activity cards</text>
+    <text x="80" y="62" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Budget estimates</text>
+  </g>
+  <g transform="translate(560, 90)">
+    <rect width="120" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="60" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">Map View</text>
+    <text x="60" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Location markers</text>
+    <text x="60" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Route display</text>
+  </g>
+  <g transform="translate(700, 90)">
+    <rect width="140" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="70" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">NovaActViewer</text>
+    <text x="70" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Booking progress</text>
+    <text x="70" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Screenshot feed</text>
+    <text x="70" y="62" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Cancel control</text>
+  </g>
+  <g transform="translate(860, 90)">
+    <rect width="180" height="78" rx="6" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.3"/>
+    <text x="90" y="22" font-family="system-ui, sans-serif" font-size="11" fill="#93c5fd" text-anchor="middle" font-weight="600">useVoiceAgent Hook</text>
+    <text x="90" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">WebSocket state machine</text>
+    <text x="90" y="50" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">AudioPlayer (PCM playback)</text>
+    <text x="90" y="62" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Resample + base64 encode</text>
+  </g>
+
+  <!-- WebSocket arrows -->
+  <line x1="300" y1="185" x2="300" y2="215" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,3"/>
+  <polygon points="296,213 300,221 304,213" fill="#60a5fa"/>
+  <text x="310" y="205" font-family="system-ui, sans-serif" font-size="9" fill="#60a5fa">WebSocket</text>
+
+  <line x1="700" y1="185" x2="700" y2="215" stroke="#60a5fa" stroke-width="2" stroke-dasharray="4,3"/>
+  <polygon points="696,213 700,221 704,213" fill="#60a5fa"/>
+  <text x="710" y="205" font-family="system-ui, sans-serif" font-size="9" fill="#60a5fa">REST</text>
+
+  <!-- ═══ BACKEND LAYER ═══ -->
+  <rect x="40" y="225" width="1020" height="280" rx="10" fill="#111827" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1.5"/>
+  <text x="60" y="248" font-family="system-ui, sans-serif" font-size="12" fill="#fbbf24" font-weight="700" letter-spacing="1">BACKEND — FastAPI + Strands Agents SDK</text>
+
+  <!-- Voice bridge -->
+  <g transform="translate(60, 260)">
+    <rect width="240" height="85" rx="8" fill="url(#amberG)" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="120" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">Voice WebSocket Bridge</text>
+    <text x="120" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">/ws/voice/{session_id}</text>
+    <text x="120" y="54" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">Bidirectional audio + events</text>
+    <text x="120" y="68" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">Auto fallback: BidiAgent -> MockAgent</text>
+  </g>
+
+  <!-- BidiAgent -->
+  <g transform="translate(320, 260)">
+    <rect width="200" height="85" rx="8" fill="url(#amberG)" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="100" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">BidiAgent</text>
+    <text x="100" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">Strands Agents SDK</text>
+    <text x="100" y="54" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">Speech-to-Speech pipeline</text>
+    <text x="100" y="68" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">Tool calling orchestration</text>
+  </g>
+
+  <!-- LOD System -->
+  <g transform="translate(540, 260)">
+    <rect width="180" height="85" rx="8" fill="url(#purpleG)" stroke="#8b5cf6" stroke-opacity="0.4" stroke-width="1"/>
+    <text x="90" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#c4b5fd" text-anchor="middle" font-weight="700">LOD System</text>
+    <text x="90" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">L1: Brief (15-40 words)</text>
+    <text x="90" y="54" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">L2: Standard (80-150)</text>
+    <text x="90" y="68" font-family="system-ui, sans-serif" font-size="9" fill="#a3a3a3" text-anchor="middle">L3: Narrative (400-800)</text>
+  </g>
+
+  <!-- Text Chat -->
+  <g transform="translate(740, 260)">
+    <rect width="150" height="85" rx="8" fill="#1e293b" stroke="#475569" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="75" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle" font-weight="700">Text Chat</text>
+    <text x="75" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">POST /api/chat</text>
+    <text x="75" y="54" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">REST fallback</text>
+    <text x="75" y="68" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Nova Lite direct</text>
+  </g>
+
+  <!-- Config -->
+  <g transform="translate(910, 260)">
+    <rect width="130" height="85" rx="8" fill="#1e293b" stroke="#475569" stroke-opacity="0.5" stroke-width="1"/>
+    <text x="65" y="22" font-family="system-ui, sans-serif" font-size="12" fill="#94a3b8" text-anchor="middle" font-weight="700">Config</text>
+    <text x="65" y="38" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Pydantic Settings</text>
+    <text x="65" y="54" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">.env loading</text>
+    <text x="65" y="68" font-family="system-ui, sans-serif" font-size="9" fill="#64748b" text-anchor="middle">Mock mode toggle</text>
+  </g>
+
+  <!-- Arrow from WS Bridge to BidiAgent -->
+  <line x1="300" y1="302" x2="320" y2="302" stroke="#f59e0b" stroke-width="1.5" stroke-opacity="0.6"/>
+  <polygon points="318,299 323,302 318,305" fill="#f59e0b" opacity="0.6"/>
+
+  <!-- Tools Section -->
+  <text x="80" y="368" font-family="system-ui, sans-serif" font-size="11" fill="#34d399" font-weight="600" letter-spacing="1">8 TRAVEL TOOLS (Strands @tool decorator)</text>
+
+  <g transform="translate(60, 378)">
+    <rect width="120" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="60" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">search_flights</text>
+    <text x="60" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Gemini + Search</text>
+  </g>
+  <g transform="translate(190, 378)">
+    <rect width="120" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="60" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">search_hotels</text>
+    <text x="60" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Google Places</text>
+  </g>
+  <g transform="translate(320, 378)">
+    <rect width="120" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="60" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">search_places</text>
+    <text x="60" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Google Places</text>
+  </g>
+  <g transform="translate(450, 378)">
+    <rect width="110" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="55" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">plan_route</text>
+    <text x="55" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Google Routes</text>
+  </g>
+  <g transform="translate(570, 378)">
+    <rect width="110" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="55" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">get_weather</text>
+    <text x="55" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">OpenWeather</text>
+  </g>
+  <g transform="translate(690, 378)">
+    <rect width="110" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="55" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">get_forecast</text>
+    <text x="55" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">OpenWeather</text>
+  </g>
+  <g transform="translate(810, 378)">
+    <rect width="115" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="57" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">plan_itinerary</text>
+    <text x="57" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Nova Lite</text>
+  </g>
+  <g transform="translate(935, 378)">
+    <rect width="110" height="40" rx="5" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.3"/>
+    <text x="55" y="17" font-family="monospace" font-size="10" fill="#6ee7b7" text-anchor="middle">book_flight</text>
+    <text x="55" y="31" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Nova Act</text>
+  </g>
+
+  <!-- Event protocol -->
+  <text x="80" y="445" font-family="system-ui, sans-serif" font-size="11" fill="#60a5fa" font-weight="600" letter-spacing="1">WEBSOCKET PROTOCOL — 8 Event Types</text>
+  <g transform="translate(60, 455)" font-family="monospace" font-size="9">
+    <rect width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="60" y="16" fill="#93c5fd" text-anchor="middle">audio</text>
+    <rect x="130" width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="190" y="16" fill="#93c5fd" text-anchor="middle">transcript</text>
+    <rect x="260" width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="320" y="16" fill="#93c5fd" text-anchor="middle">tool_call</text>
+    <rect x="390" width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="450" y="16" fill="#93c5fd" text-anchor="middle">itinerary</text>
+    <rect x="520" width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="580" y="16" fill="#93c5fd" text-anchor="middle">interruption</text>
+    <rect x="650" width="120" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="710" y="16" fill="#93c5fd" text-anchor="middle">lod_change</text>
+    <rect x="780" width="140" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="850" y="16" fill="#93c5fd" text-anchor="middle">booking_progress</text>
+    <rect x="930" width="100" height="24" rx="4" fill="#1e293b" stroke="#3b82f6" stroke-opacity="0.2"/>
+    <text x="980" y="16" fill="#93c5fd" text-anchor="middle">error</text>
+  </g>
+
+  <!-- Arrows to external services -->
+  <line x1="300" y1="505" x2="300" y2="530" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <polygon points="296,528 300,536 304,528" fill="#f59e0b"/>
+  <line x1="700" y1="505" x2="700" y2="530" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <polygon points="696,528 700,536 704,528" fill="#f59e0b"/>
+
+  <!-- ═══ SERVICES LAYER ═══ -->
+  <rect x="40" y="540" width="500" height="160" rx="10" fill="#111827" stroke="#f59e0b" stroke-opacity="0.25" stroke-width="1.5"/>
+  <text x="60" y="563" font-family="system-ui, sans-serif" font-size="12" fill="#fbbf24" font-weight="700" letter-spacing="1">AMAZON NOVA SERVICES (AWS Bedrock)</text>
+
+  <g transform="translate(60, 575)">
+    <rect width="145" height="55" rx="6" fill="url(#amberG)" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <text x="72" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#fcd34d" text-anchor="middle" font-weight="600">Nova 2 Sonic</text>
+    <text x="72" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Speech-to-Speech</text>
+    <text x="72" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Realtime voice S2S</text>
+  </g>
+  <g transform="translate(220, 575)">
+    <rect width="145" height="55" rx="6" fill="url(#amberG)" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <text x="72" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#fcd34d" text-anchor="middle" font-weight="600">Nova 2 Lite</text>
+    <text x="72" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Reasoning + Text</text>
+    <text x="72" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Itinerary planner</text>
+  </g>
+  <g transform="translate(380, 575)">
+    <rect width="145" height="55" rx="6" fill="url(#amberG)" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <text x="72" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#fcd34d" text-anchor="middle" font-weight="600">Nova Act</text>
+    <text x="72" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Browser automation</text>
+    <text x="72" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Flight booking</text>
+  </g>
+
+  <!-- DynamoDB -->
+  <g transform="translate(60, 645)">
+    <rect width="145" height="42" rx="6" fill="#1e293b" stroke="#f59e0b" stroke-opacity="0.2"/>
+    <text x="72" y="18" font-family="system-ui, sans-serif" font-size="10" fill="#fbbf24" text-anchor="middle" font-weight="600">DynamoDB</text>
+    <text x="72" y="33" font-family="system-ui, sans-serif" font-size="8" fill="#64748b" text-anchor="middle">Sessions / Itineraries / Prefs</text>
+  </g>
+
+  <!-- External APIs -->
+  <rect x="560" y="540" width="500" height="160" rx="10" fill="#111827" stroke="#10b981" stroke-opacity="0.25" stroke-width="1.5"/>
+  <text x="580" y="563" font-family="system-ui, sans-serif" font-size="12" fill="#34d399" font-weight="700" letter-spacing="1">EXTERNAL APIs</text>
+
+  <g transform="translate(580, 575)">
+    <rect width="145" height="55" rx="6" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.4"/>
+    <text x="72" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#6ee7b7" text-anchor="middle" font-weight="600">Google Gemini</text>
+    <text x="72" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Search grounding</text>
+    <text x="72" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Flight data</text>
+  </g>
+  <g transform="translate(740, 575)">
+    <rect width="145" height="55" rx="6" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.4"/>
+    <text x="72" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#6ee7b7" text-anchor="middle" font-weight="600">Google Maps</text>
+    <text x="72" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Places + Routes</text>
+    <text x="72" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Hotels + POI + Directions</text>
+  </g>
+  <g transform="translate(900, 575)">
+    <rect width="140" height="55" rx="6" fill="url(#greenG)" stroke="#10b981" stroke-opacity="0.4"/>
+    <text x="70" y="20" font-family="system-ui, sans-serif" font-size="11" fill="#6ee7b7" text-anchor="middle" font-weight="600">OpenWeather</text>
+    <text x="70" y="34" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">Current + Forecast</text>
+    <text x="70" y="46" font-family="system-ui, sans-serif" font-size="8" fill="#a3a3a3" text-anchor="middle">5-day weather</text>
+  </g>
+</svg>

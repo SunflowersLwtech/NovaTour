@@ -1,0 +1,4 @@
+# Nova Act — install separately due to strands-agents version conflict
+# nova-act requires strands-agents<=1.23.0, but BidiAgent needs >=1.30.0
+# Install with: pip install nova-act --no-deps && pip install playwright && playwright install chromium
+nova-act>=3.1.0

@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 500">
+  <defs>
+    <linearGradient id="teBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0e1a"/>
+      <stop offset="100%" style="stop-color:#0f1729"/>
+    </linearGradient>
+    <linearGradient id="teGreen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#14532d"/>
+      <stop offset="100%" style="stop-color:#052e16"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1100" height="500" fill="url(#teBg)"/>
+
+  <!-- Title -->
+  <text x="550" y="35" font-family="system-ui, sans-serif" font-size="18" fill="#e2e8f0" text-anchor="middle" font-weight="700" letter-spacing="2">TOOL ECOSYSTEM — 8 TRAVEL TOOLS</text>
+  <text x="550" y="55" font-family="system-ui, sans-serif" font-size="11" fill="#64748b" text-anchor="middle">All tools use Strands @tool decorator, bound to BidiAgent for voice-triggered tool calling with mock mode fallback</text>
+
+  <!-- Central hub -->
+  <g transform="translate(420, 180)">
+    <rect width="260" height="100" rx="12" fill="#78350f" fill-opacity="0.4" stroke="#f59e0b" stroke-opacity="0.6" stroke-width="2"/>
+    <text x="130" y="30" font-family="system-ui, sans-serif" font-size="15" fill="#fcd34d" text-anchor="middle" font-weight="700">BidiAgent</text>
+    <text x="130" y="50" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">Nova Sonic orchestrates tool calls</text>
+    <text x="130" y="67" font-family="system-ui, sans-serif" font-size="10" fill="#d4d4d4" text-anchor="middle">from natural voice commands</text>
+    <text x="130" y="87" font-family="monospace" font-size="9" fill="#a3a3a3" text-anchor="middle">tools=ALL_TOOLS (8 functions)</text>
+  </g>
+
+  <!-- Tool cards - Top row -->
+  <!-- search_flights -->
+  <g transform="translate(30, 70)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">search_flights</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Flights via Gemini Search grounding</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">API: google-genai + GoogleSearch tool</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: prices, airlines, duration, stops</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Model: gemini-2.5-flash-preview-05-20</text>
+  </g>
+
+  <!-- search_hotels -->
+  <g transform="translate(280, 70)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">search_hotels</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Hotels via Google Places API (New)</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Endpoint: places:searchText</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: name, rating, address, price</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Filter: includedType="hotel"</text>
+  </g>
+
+  <!-- search_places -->
+  <g transform="translate(590, 70)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">search_places</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">POI via Google Places API (New)</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Text search + Nearby with locationBias</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: name, coords, rating, types</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Haversine distance sorting</text>
+  </g>
+
+  <!-- plan_route -->
+  <g transform="translate(840, 70)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">plan_route</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Directions via Google Routes API v2</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Modes: drive, walk, bicycle, transit</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: distance, duration, steps</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">computeRoutes endpoint</text>
+  </g>
+
+  <!-- Connection lines to hub (top) -->
+  <line x1="145" y1="160" x2="445" y2="195" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="395" y1="160" x2="470" y2="195" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="705" y1="160" x2="630" y2="195" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="955" y1="160" x2="655" y2="195" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+
+  <!-- Tool cards - Bottom row -->
+  <!-- get_weather -->
+  <g transform="translate(30, 320)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">get_weather</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Current weather via OpenWeather API</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">By city name or lat/lon coordinates</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: temp, humidity, wind, clouds</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Endpoint: /data/2.5/weather</text>
+  </g>
+
+  <!-- get_forecast -->
+  <g transform="translate(280, 320)">
+    <rect width="230" height="90" rx="8" fill="url(#teGreen)" stroke="#10b981" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#6ee7b7" text-anchor="middle" font-weight="700">get_forecast</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">5-day forecast via OpenWeather API</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">3-hour intervals grouped by day</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: daily min/max, conditions</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Endpoint: /data/2.5/forecast</text>
+  </g>
+
+  <!-- plan_itinerary -->
+  <g transform="translate(590, 320)">
+    <rect width="230" height="90" rx="8" fill="#451a03" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">plan_itinerary</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">AI itinerary via Nova 2 Lite</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Bedrock converse() with JSON output</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Returns: day plans, activities, budget</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Model: us.amazon.nova-2-lite-v1:0</text>
+  </g>
+
+  <!-- book_flight -->
+  <g transform="translate(840, 320)">
+    <rect width="230" height="90" rx="8" fill="#451a03" stroke="#f59e0b" stroke-opacity="0.4" stroke-width="1.5"/>
+    <text x="115" y="22" font-family="monospace" font-size="12" fill="#fcd34d" text-anchor="middle" font-weight="700">book_flight</text>
+    <text x="115" y="40" font-family="system-ui, sans-serif" font-size="9" fill="#d4d4d4" text-anchor="middle">Browser automation via Nova Act</text>
+    <text x="115" y="55" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Google Flights: search, sort, extract</text>
+    <text x="115" y="70" font-family="system-ui, sans-serif" font-size="9" fill="#94a3b8" text-anchor="middle">Async two-step with progress callback</text>
+    <text x="115" y="84" font-family="system-ui, sans-serif" font-size="8" fill="#475569" text-anchor="middle">Sync + async confirm_booking()</text>
+  </g>
+
+  <!-- Connection lines to hub (bottom) -->
+  <line x1="145" y1="320" x2="445" y2="268" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="395" y1="320" x2="470" y2="268" stroke="#10b981" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="705" y1="320" x2="630" y2="268" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1"/>
+  <line x1="955" y1="320" x2="655" y2="268" stroke="#f59e0b" stroke-opacity="0.3" stroke-width="1"/>
+
+  <!-- Legend -->
+  <g transform="translate(30, 440)">
+    <rect width="12" height="12" rx="2" fill="#14532d" stroke="#10b981" stroke-opacity="0.4"/>
+    <text x="18" y="11" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8">= External API tool (Google / OpenWeather)</text>
+    <rect x="290" width="12" height="12" rx="2" fill="#451a03" stroke="#f59e0b" stroke-opacity="0.4"/>
+    <text x="308" y="11" font-family="system-ui, sans-serif" font-size="10" fill="#94a3b8">= Amazon Nova powered tool (Bedrock / Nova Act)</text>
+    <text x="620" y="11" font-family="system-ui, sans-serif" font-size="10" fill="#475569">All tools return mock data when API keys are missing or mock_mode=true</text>
+  </g>
+</svg>
