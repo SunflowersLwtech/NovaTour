@@ -416,9 +416,12 @@ async def voice_endpoint(websocket: WebSocket, session_id: str):
         except Exception:
             pass
     finally:
-        # Cleanup
+        # Cleanup — timeout-protected to prevent indefinite hang
+        # (SDK's stop_all() awaits network I/O without timeout)
         try:
-            await agent.stop()
+            await asyncio.wait_for(agent.stop(), timeout=5.0)
+        except asyncio.TimeoutError:
+            logger.warning(f"agent.stop() timed out for session={session_id}, forcing cleanup")
         except Exception:
             pass
         _active_sessions.pop(session_id, None)

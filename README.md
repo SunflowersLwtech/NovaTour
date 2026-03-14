@@ -1,17 +1,10 @@
 <div align="center">
 
-<img src="assets/NovaTour.png" alt="NovaTour" width="160"/>
-
 <img src="assets/hero-banner.svg" alt="NovaTour — AI Voice Travel Assistant" width="100%"/>
-
-<br/>
-
-**Speak your dream trip. Watch it come to life.** NovaTour combines **four Amazon Nova AI services** into a voice-driven travel assistant — searching flights, finding hotels, checking weather, generating itineraries, and automating bookings through natural speech.
 
 [![Amazon Nova](https://img.shields.io/badge/Amazon_Nova-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/ai/generative-ai/nova/)
 [![Strands Agents](https://img.shields.io/badge/Strands_Agents-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)](https://github.com/strands-agents/sdk-python)
 [![Gemini 3.1](https://img.shields.io/badge/Gemini_3.1-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
-
 [![Python](https://img.shields.io/badge/Python_3.13-3776AB?logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)](https://nextjs.org)
@@ -122,7 +115,7 @@ cp ../../.env.example ../.env  # Edit with your API keys
 cd ../frontend && npm install
 
 # Run (two terminals)
-cd novatour/backend && uvicorn app.main:app --reload --port 8000
+cd novatour/backend && uvicorn app.main:app --reload --port 8000 --ws websockets-sansio
 cd novatour/frontend && npm run dev
 
 # Test
