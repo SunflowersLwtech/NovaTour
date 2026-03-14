@@ -17,6 +17,9 @@ import {
 } from "@/utils/audio";
 
 const WS_URL = "ws://localhost:8000/ws/voice";
+const API_URL = "http://localhost:8000/api";
+
+export type VoiceStateValue = "idle" | "responding" | "interrupted" | "finished";
 
 export function useVoiceAgent(sessionId: string) {
   const [isConnected, setIsConnected] = useState(false);
@@ -26,6 +29,7 @@ export function useVoiceAgent(sessionId: string) {
   const [itinerary, setItinerary] = useState<ItineraryData | null>(null);
   const [lodLevel, setLodLevel] = useState(2);
   const [bookingProgress, setBookingProgress] = useState<BookingProgress | null>(null);
+  const [voiceState, setVoiceState] = useState<VoiceStateValue>("idle");
   const [isMuted, setIsMuted] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,6 +136,10 @@ export function useVoiceAgent(sessionId: string) {
           });
           break;
 
+        case "voice_state":
+          if (data.state) setVoiceState(data.state as VoiceStateValue);
+          break;
+
         case "lod_change":
           if (data.level) setLodLevel(data.level);
           break;
@@ -216,11 +224,29 @@ export function useVoiceAgent(sessionId: string) {
 
   const sendText = useCallback(
     (text: string) => {
-      if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
       addMessage("user", text, true);
-      wsRef.current.send(JSON.stringify({ type: "text", text }));
+
+      // Primary: send via WebSocket if connected
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({ type: "text", text }));
+        return;
+      }
+
+      // Fallback: send via REST /api/chat when WebSocket is not connected
+      fetch(`${API_URL}/chat`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text, session_id: sessionId }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.reply) addMessage("assistant", data.reply, true);
+        })
+        .catch(() => {
+          setError("Failed to send message. Please check your connection.");
+        });
     },
-    [addMessage]
+    [addMessage, sessionId]
   );
 
   const toggleMute = useCallback(() => {
@@ -233,6 +259,10 @@ export function useVoiceAgent(sessionId: string) {
   const setLod = useCallback((level: number) => {
     if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
     wsRef.current.send(JSON.stringify({ type: "lod", level }));
+  }, []);
+
+  const cancelBooking = useCallback(() => {
+    setBookingProgress(null);
   }, []);
 
   // Cleanup on unmount
@@ -249,6 +279,7 @@ export function useVoiceAgent(sessionId: string) {
     isConnected,
     isListening,
     isMuted,
+    voiceState,
     messages,
     toolCalls,
     itinerary,
@@ -262,5 +293,6 @@ export function useVoiceAgent(sessionId: string) {
     sendText,
     setLod,
     toggleMute,
+    cancelBooking,
   };
 }

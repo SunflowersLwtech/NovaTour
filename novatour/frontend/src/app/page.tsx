@@ -18,6 +18,7 @@ export default function Home() {
     isConnected,
     isListening,
     isMuted,
+    voiceState,
     messages,
     toolCalls,
     itinerary,
@@ -31,6 +32,7 @@ export default function Home() {
     sendText,
     setLod,
     toggleMute,
+    cancelBooking,
   } = useVoiceAgent(sessionId);
 
   return (
@@ -40,6 +42,7 @@ export default function Home() {
         isConnected={isConnected}
         isListening={isListening}
         isMuted={isMuted}
+        voiceState={voiceState}
         lodLevel={lodLevel}
         onConnect={connect}
         onDisconnect={disconnect}
@@ -58,7 +61,7 @@ export default function Home() {
 
       {/* Three-column layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left: Chat */}
+        {/* Left: Chat — always available (text fallback via REST when disconnected) */}
         <div className="w-1/3 min-w-[320px] border-r border-gray-700">
           <ChatInterface
             messages={messages}
@@ -84,8 +87,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* NovaActViewer overlay */}
-      <NovaActViewer bookingProgress={bookingProgress} />
+      {/* NovaActViewer overlay — with cancel wired */}
+      <NovaActViewer bookingProgress={bookingProgress} onCancel={cancelBooking} />
     </div>
   );
 }

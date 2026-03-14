@@ -1,9 +1,19 @@
 "use client";
 
+import type { VoiceStateValue } from "@/hooks/useVoiceAgent";
+
+const VOICE_STATE_DISPLAY: Record<VoiceStateValue, { label: string; color: string }> = {
+  idle: { label: "Ready", color: "text-gray-400" },
+  responding: { label: "Speaking...", color: "text-green-400" },
+  interrupted: { label: "Interrupted", color: "text-yellow-400" },
+  finished: { label: "Done", color: "text-blue-400" },
+};
+
 interface VoicePanelProps {
   isConnected: boolean;
   isListening: boolean;
   isMuted: boolean;
+  voiceState: VoiceStateValue;
   lodLevel: number;
   onConnect: () => void;
   onDisconnect: () => void;
@@ -17,6 +27,7 @@ export function VoicePanel({
   isConnected,
   isListening,
   isMuted,
+  voiceState,
   lodLevel,
   onConnect,
   onDisconnect,
@@ -25,6 +36,17 @@ export function VoicePanel({
   onSetLod,
   onToggleMute,
 }: VoicePanelProps) {
+  // Determine status text with priority: muted > voiceState > listening > connection
+  const statusInfo = isMuted
+    ? { label: "Muted", color: "text-yellow-400" }
+    : isListening && voiceState !== "idle"
+    ? VOICE_STATE_DISPLAY[voiceState]
+    : isListening
+    ? { label: "Listening...", color: "text-green-400" }
+    : isConnected
+    ? { label: "Ready", color: "text-gray-400" }
+    : { label: "Disconnected", color: "text-gray-500" };
+
   return (
     <div className="flex items-center gap-4 px-6 py-3 bg-gray-900 border-b border-gray-700">
       {/* Logo */}
@@ -56,11 +78,7 @@ export function VoicePanel({
             : "bg-gray-600 cursor-not-allowed"
         }`}
       >
-        <svg
-          className="w-6 h-6 text-white"
-          fill="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
           {isListening ? (
             <rect x="6" y="6" width="12" height="12" rx="2" />
           ) : (
@@ -91,10 +109,15 @@ export function VoicePanel({
         </svg>
       </button>
 
-      {/* Status */}
-      <span className="text-sm text-gray-400">
-        {isMuted ? "Muted" : isListening ? "Listening..." : isConnected ? "Ready" : "Disconnected"}
-      </span>
+      {/* Voice State Indicator */}
+      <div className="flex items-center gap-2">
+        {voiceState === "responding" && (
+          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+        )}
+        <span className={`text-sm ${statusInfo.color}`}>
+          {statusInfo.label}
+        </span>
+      </div>
 
       {/* LOD Controls */}
       <div className="ml-auto flex items-center gap-2">

@@ -25,7 +25,7 @@ export function ChatInterface({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || !isConnected) return;
+    if (!input.trim()) return;
     onSendText(input.trim());
     setInput("");
   };
@@ -39,6 +39,15 @@ export function ChatInterface({
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.length === 0 && (
+          <div className="text-center text-gray-500 text-sm mt-8">
+            <p>Connect and start speaking, or type a message below.</p>
+            <p className="text-xs mt-1 opacity-60">
+              Text chat works even without voice connection.
+            </p>
+          </div>
+        )}
+
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -74,26 +83,34 @@ export function ChatInterface({
             </div>
           ))}
 
-        {/* Completed tool calls */}
+        {/* Completed tool calls with results */}
         {toolCalls
           .filter((t) => t.status === "complete")
-          .slice(-3)
+          .slice(-5)
           .map((tc) => (
             <div
               key={`${tc.name}-${tc.timestamp}`}
-              className="flex items-center gap-2 px-3 py-2 bg-green-900/20 rounded-lg border border-green-700/30"
+              className="px-3 py-2 bg-green-900/20 rounded-lg border border-green-700/30"
             >
-              <div className="w-2 h-2 bg-green-400 rounded-full" />
-              <span className="text-xs text-green-300">
-                {tc.name} completed
-              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full" />
+                <span className="text-xs text-green-300 font-medium">
+                  {tc.name}
+                </span>
+              </div>
+              {tc.result && (
+                <p className="text-xs text-gray-400 mt-1 line-clamp-3">
+                  {tc.result.slice(0, 200)}
+                  {tc.result.length > 200 ? "..." : ""}
+                </p>
+              )}
             </div>
           ))}
 
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Input — always enabled (REST fallback when disconnected) */}
       <form
         onSubmit={handleSubmit}
         className="p-3 border-t border-gray-700"
@@ -104,14 +121,15 @@ export function ChatInterface({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              isConnected ? "Type a message..." : "Connect to start chatting"
+              isConnected
+                ? "Type a message (or use voice)..."
+                : "Type a message (text mode)..."
             }
-            disabled={!isConnected}
-            className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-2 text-sm border border-gray-600 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-2 text-sm border border-gray-600 focus:border-blue-500 focus:outline-none"
           />
           <button
             type="submit"
-            disabled={!isConnected || !input.trim()}
+            disabled={!input.trim()}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
